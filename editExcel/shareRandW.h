@@ -34,11 +34,15 @@ public:
     crc Crc;
     UINT32 buckcrc = 0;
 
+    char** inputsinum;//入力文字列Siナンバー
+    int subcount;//入力文字列カウント
+
     shareRandD(UINT8* d, UINT64 l);
     ~shareRandD();
     void getSicount();
-    UINT8* writeshare(UINT8* instr, int instrlen, inputtxt* substr, int INstrCount);
-    inputtxt* searchSi(inputtxt* ipt);
+    char* writeSubstr(UINT8* d, char* s);
+    UINT8* writeshare(UINT8* instr, int instrlen, char* subone, char* subtwo, char* subthree, char* subfour);
+    void searchSi(char* ipto, char* iptt, char* iptth, char* iptf);
     //unique and count get
 
     //share str plus

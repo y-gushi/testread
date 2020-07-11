@@ -9,7 +9,7 @@ public:
 
     ~shipinfo();
 
-    const char* IN[11] = { "ITEM NO","DESCRIPTION/COL","90CM","100CM","110CM","120CM","130CM","140CM","150CM","160CM","F" };
+    const char* INt[11] = { "ITEM NO","DESCRIPTION/COL","90CM","100CM","110CM","120CM","130CM","140CM","150CM","160CM","F" };
 
     UINT32 ITcells[11] = { 0,0,0,0,0,0,0,0,0,0,0 };
     UINT32 ITEMrow = 0;
@@ -26,7 +26,7 @@ public:
     UINT8* outuntil(UINT8 c, UINT8* st);
 
     struct Items* itemtalloc();
-    struct Items* additem(Items* r, UINT8* num,UINT8* co,UINT8* ni,UINT8* te,UINT8* el,UINT8* tw,UINT8* th,UINT8* fo,UINT8* fi,UINT8* si,UINT8* f);
+    struct Items* additem(Items* r, UINT8* num, UINT8* co, UINT8* ni, UINT8* te, UINT8* el, UINT8* tw, UINT8* th, UINT8* fo, UINT8* fi, UINT8* si, UINT8* f);
     bool searchitemCell();
     void GetItems();
     UINT8* StrInit();

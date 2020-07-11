@@ -30,6 +30,10 @@ HeaderRead::~HeaderRead() {
     
 }
 
+void HeaderRead::freeER() {
+    free(ER->comment);
+}
+
 void HeaderRead::freeheader() {
     free(scd->filename);
     free(scd->kakutyo);

@@ -145,6 +145,7 @@ public:
 
     HeaderRead(char* name);
     ~HeaderRead();
+    void freeER();
     void freeheader();
     void freeLH();
     void endread(std::ifstream* fin);//エンドヘッダー情報読み取り

@@ -4,12 +4,14 @@
 shareRandD::shareRandD(UINT8* d, UINT64 l) {
     sd = d;
     sdlen = l;
+    inputsinum = (char**)malloc(5);
+    subcount = 0;
 }
 
 shareRandD::~shareRandD() {
-    for (int i = 0; i < mycount; i++)//シェアー文字列　メモリ解放
-        Sitablefree(sis[i]);
+
     //free(writedata);
+    //free(inputsinum);
 }
 
 void shareRandD::getSicount() {
@@ -65,7 +67,7 @@ void shareRandD::getSicount() {
             if (strcmp((const char*)searchunique, (const char*)uniquecount) == 0)
             {
                 siunique_place = 0;
-                while (sd[datapos+ siunique_place] != '"') {
+                while (sd[datapos + siunique_place] != '"') {
                     siunique_place++;
                 }
                 UINT32 msize = (UINT32)siunique_place + 1;
@@ -92,7 +94,7 @@ void shareRandD::getSicount() {
 
     if (getunique) {
         for (int i = 0; i < siunique_place; i++) {//share unique数　数字に変換
-            double po= pow(10, siunique_place - i - 1);
+            double po = pow(10, siunique_place - i - 1);
             UINT32 powsize = UINT32(po);
             siunique += (getunique[i] - 48) * powsize;
         }
@@ -100,8 +102,45 @@ void shareRandD::getSicount() {
         free(getunique);
     }
 }
+
+char* shareRandD::writeSubstr(UINT8* d, char* s) {
+    UINT8* sinum = nullptr;
+    const char si[] = "<si><t>";
+    const char ssi[] = "</t></si>";
+
+    //サブ文字列追加
+    if (strlen(s) > 0) {
+        for (int i = 0; i < strlen(si); i++) {
+            d[writeleng] = si[i];
+            writeleng++;
+        }
+        size_t nmc = 0;
+        UINT8* stockstr = nullptr;
+        while (s[nmc] != '\0') {
+            d[writeleng] = s[nmc];
+            nmc++; writeleng++;
+        }
+        //submath[j] = (UINT8*)malloc(nmc + 1);
+        sinum = st.InttoChar(siunique, &siunique_place);//si番号入れる
+        siunique++;
+
+        for (int i = 0; i < strlen(ssi); i++) {
+            d[writeleng] = ssi[i];
+            writeleng++;
+        }
+    }
+    /*
+    else {
+        sinum = (UINT8*)malloc(1);
+        sinum = nullptr;
+    }
+    */
+
+    return (char*)sinum;
+}
+
 /*<si><t>5/21着</t><rPh sb="4" eb="5"><t>チャク</t></rPh><phoneticPr fontId="1"/></si>*/
-UINT8* shareRandD::writeshare(UINT8* instr, int instrlen,inputtxt *substr, int INstrCount) {
+UINT8* shareRandD::writeshare(UINT8* instr, int instrlen, char* subone, char* subtwo, char* subthree, char* subfour) {
     UINT8 sitag[] = "<si>";
     UINT8 searchsi[5] = { 0 };
     UINT8 siend[] = "</si>";
@@ -122,20 +161,29 @@ UINT8* shareRandD::writeshare(UINT8* instr, int instrlen,inputtxt *substr, int I
 
     int stocksic = siunique;
 
-    inputtxt* subm = substr;
-
-    while (subm) {
-        if (!subm->sinum) {
-            sicount++;//1タグ分増やす
-            siunique++;
-        }
-        subm = subm->next;
+    //サブ文字カウント
+    if (strlen(subfour) > 0 && !inputsinum[0]) {
+        siunique++; sicount++;
     }
+    if (strlen(subthree) > 0 && !inputsinum[1]) {
+        siunique++; sicount++;
+    }
+    if (strlen(subtwo) > 0 && !inputsinum[2]) {
+        siunique++; sicount++;
+    }
+    if (strlen(subone) > 0 && !inputsinum[3]) {
+        siunique++; sicount++;
+    }
+    //メイン文字プラス
+    siunique++; sicount++;
 
     countstr = st.InttoChar(sicount, &sicount_place);
     uniqstr = st.InttoChar(siunique, &siunique_place);
 
+    std::cout << "もとのsi 数 :" << stocksic << " " << siunique << std::endl;
+
     //count write and copy
+
     int coucount = 1;
     while (coucount != 0)
     {
@@ -217,88 +265,91 @@ UINT8* shareRandD::writeshare(UINT8* instr, int instrlen,inputtxt *substr, int I
     size_t nmc = 0;
 
     siunique = stocksic;//sicount書き込み前の数に
-
+    uniqstr = st.InttoChar(siunique, &siunique_place);//メイン文字 si番号
     //メイン日付文字列追加
-    for (size_t i = 0; i < strlen(si); i++) {
-        writedata[writeleng] = si[i];
-        writeleng++;
-    }
-    for (size_t i = 0; i < instrlen; i++) {
-        writedata[writeleng] = instr[i];
-        writeleng++;
-    }
-    siunique++;
-    for (size_t i = 0; i < strlen(esi); i++) {
-        writedata[writeleng] = esi[i];
-        writeleng++;
-    }
-
-    subm = substr;
-    //サブ文字列追加
-    while (subm) {
-        if (!subm->sinum) {//siになければ書き込み
-            for (int i = 0; i < strlen(si); i++) {
-                writedata[writeleng] = si[i];
-                writeleng++;
-            }
-            nmc = 0;
-            UINT8* stockstr=nullptr;
-            while (subm->txt[nmc] != '\0') {
-                writedata[writeleng] = subm->txt[nmc];
-                nmc++; writeleng++;
-            }
-            //submath[j] = (UINT8*)malloc(nmc + 1);
-            subm->sinum = st.InttoChar(siunique, &siunique_place);//si番号入れる
-
-            std::cout << "si number : " << subm->sinum<<" "<< writeleng<<" "<<datapos << " " << datalen << std::endl;
-            siunique++;
-
-            for (size_t i = 0; i < strlen(ssi); i++) {
-                writedata[writeleng] = ssi[i];
-                writeleng++;
-            }
+    if (instrlen > 0) {
+        for (int i = 0; i < strlen(si); i++) {
+            writedata[writeleng] = si[i];
+            writeleng++;
         }
-        subm = subm->next;
+        for (int i = 0; i < instrlen; i++) {
+            writedata[writeleng] = instr[i];
+            writeleng++;
+        }
+        siunique++;
+        for (int i = 0; i < strlen(esi); i++) {
+            writedata[writeleng] = esi[i];
+            writeleng++;
+        }
     }
-    std::cout << "追加データ書き込み終わり" << std::endl;
+
+    //サブ文字列追加 文字がある　si無し
+    char* sin = nullptr;
+    if (!inputsinum[0] && strlen(subfour) > 0)
+        inputsinum[0] = writeSubstr(writedata, subfour);
+    if (!inputsinum[1] && strlen(subthree) > 0)
+        inputsinum[1] = writeSubstr(writedata, subthree);
+    if (!inputsinum[2] && strlen(subtwo) > 0)
+        inputsinum[2] = writeSubstr(writedata, subtwo);
+    if (!inputsinum[3] && strlen(subone) > 0)
+        inputsinum[3] = writeSubstr(writedata, subone);
+
+
     //write to end
     while (datapos < sdlen) {
         writedata[writeleng] = sd[datapos];//データコピー
         datapos++;
         writeleng++;
-        std::cout << "sdlen : " << writeleng << " " << datapos << " " << sdlen << std::endl;
     }
-    uniqstr = st.InttoChar(siunique - 1, &siunique_place);
+
     //std::cout << "uniqstr : " << uniqstr <<std::endl;
     Crc.mcrc(writedata, writeleng);
     buckcrc = Crc.crc32;
 
-    std::cout << "si書き込み終わり" << std::endl;
-
     return writedata;//元データ更新
 }
 //Si 文字列検索
-inputtxt* shareRandD::searchSi(inputtxt* ipt) {
+void shareRandD::searchSi(char* ipto, char* iptt, char* iptth, char* iptf) {
     int result = 0;
     int place = 0;
     int searcount = 0;
     UINT8* num = nullptr;
-    inputtxt* root = ipt;
 
-    while (ipt) {
-        for (int i = 0; i < siunique; i++) {
-            result = strcmp((const char*)sis[i]->Ts, (const char*)ipt->txt);
+    for (int i = 0; i < 5; i++)
+        inputsinum[i] = nullptr;
+
+    for (int i = 0; i < siunique; i++) {
+        if (strlen(ipto) > 0) {
+            result = strcmp((const char*)sis[i]->Ts, (const char*)ipto);
             if (result == 0) {//文字列一致
                 num = st.InttoChar(i, &place);//intをcharへ
-                std::cout << "si 一致" << num << std::endl;
-                ipt->sinum = num;
-                break;
+                inputsinum[0] = (char*)num;
             }
-         }
-        ipt = ipt->next;
+        }
+        if (strlen(iptt) > 0) {
+            result = strcmp((const char*)sis[i]->Ts, (const char*)iptt);
+            if (result == 0) {//文字列一致
+                num = st.InttoChar(i, &place);//intをcharへ
+                inputsinum[1] = (char*)num;
+            }
+        }
+
+        if (strlen(iptth) > 0) {
+            result = strcmp((const char*)sis[i]->Ts, (const char*)iptth);
+            if (result == 0) {//文字列一致
+                num = st.InttoChar(i, &place);//intをcharへ
+                inputsinum[2] = (char*)num;
+            }
+        }
+
+        if (strlen(iptf) > 0) {
+            result = strcmp((const char*)sis[i]->Ts, (const char*)iptf);
+            if (result == 0) {//文字列一致
+                num = st.InttoChar(i, &place);//intをcharへ
+                inputsinum[3] = (char*)num;
+            }
+        }
     }
-    
-    return ipt;
 }
 
 //share を配列へ入れる
@@ -313,11 +364,11 @@ void shareRandD::ReadShare() {
     UINT8 Esip[6] = { 0 };///si検索スライド用
 
     UINT32 newsize = sizeof(Si);
-    newsize = newsize * (siunique+1);
+    newsize = newsize * (siunique + 1);
     sis = (Si**)malloc(sizeof(Si) * siunique);//si数分の配列確保
 
     //テスト用
-    searchItemNum change=searchItemNum(nullptr,nullptr);
+    searchItemNum change = searchItemNum(nullptr, nullptr);
 
     if (sip && sis && Esip) {
         while (dp < sdlen) {
@@ -345,10 +396,11 @@ void shareRandD::ReadShare() {
                     result = strncmp((char const*)sip, tagT, 2);
                     if (result == 0) {// <t が一致したら<までsi get
                         i = 0;
-                        while (sd[dp - 1] != '>'&& dp < sdlen)//t tag 閉じまで
+                        while (sd[dp - 1] != '>')//t tag 閉じまで
                             dp++;
-                        while (sd[dp + i] != '<'&& dp < sdlen)
+                        while (sd[dp + i] != '<') {
                             i++;//文字数カウント
+                        }
 
                         UINT32 msize = i + 1;
                         UINT8* sistr = (UINT8*)malloc(msize);//tagの値
@@ -364,7 +416,6 @@ void shareRandD::ReadShare() {
                             Tcount++;//t配列数
                         }
                         else {
-                            std::cout << "cant get si str" << std::endl;
                         }
                     }
                 }
@@ -374,7 +425,6 @@ void shareRandD::ReadShare() {
         }
     }
     else {
-        std::cout << "malloc si get null" << std::endl;
     }
 }
 

@@ -27,6 +27,30 @@
 
 #define BUFSIZE  256
 
+std::wstring multi_to_wide_capi(std::string const& src)
+{
+    std::size_t converted{};
+    std::vector<wchar_t> dest(src.size(), L'\0');
+    if (::_mbstowcs_s_l(&converted, dest.data(), dest.size(), src.data(), _TRUNCATE, ::_create_locale(LC_ALL, "jpn")) != 0) {
+        throw std::system_error{ errno, std::system_category() };
+    }
+    dest.resize(std::char_traits<wchar_t>::length(dest.data()));
+    dest.shrink_to_fit();
+    return std::wstring(dest.begin(), dest.end());
+}
+
+std::string wide_to_utf8_cppapi(std::wstring const& src)
+{
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.to_bytes(src);
+}
+
+std::string multi_to_utf8_cppapi(std::string const& src)
+{
+    auto const wide = multi_to_wide_capi(src);
+    return wide_to_utf8_cppapi(wide);
+}
+
 char* SJIStoUTF8(char* szSJIS, char* bufUTF8, int size) {
 
     wchar_t bufUnicode[BUFSIZE];
@@ -84,26 +108,112 @@ int main(char* fname[], int i) {
     //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
     char Zfn[] = "C:/Users/ryo19/OneDrive/デスクトップ/excelfiles/【1 在庫状況】.xlsx";
+    char PLfile[] = "C:/Users/ryo19/OneDrive/デスクトップ/excelfiles/LY200212-SHIP ゾゾ.xlsx"; //テスト書き出し
     char mfile[] = "C:/Users/ryo19/OneDrive/デスクトップ/teststyle.xml"; //テスト書き出し
     char recd[] = "C:/Users/ryo19/OneDrive/デスクトップ/Centraldata"; //テスト書き出し
     char wridata[] = "C:/Users/ryo19/OneDrive/デスクトップ/xmls/";
 
     char shares[] = "sharedStrings.xml";
     char stylefn[] = "xl/styles.xml";
-
+    char sheetname[] = "worksheets/sheet1.xml";
     /*
-    // Get current flag
-    int tmpFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-    // Turn on leak-checking bit.
-    tmpFlag |= _CRTDBG_LEAK_CHECK_DF;
-    // Set flag to the new value.
-    _CrtSetDbgFlag(tmpFlag);
+    WCHAR wStrW[] = _T("2020,ship,5/19着");
+    //変換文字列格納バッファ
+    wchar_t intxto[] = _T("2020,shiptyt着");
+
+    std::string conv = wide_to_utf8_cppapi(intxto);//utf8へ
+    const char* newinput = conv.c_str();
+    char* Mnstring = convchar(intxto);
+
+    //変換文字列格納バッファ
+   //char	inMainstr[50];
+    char	wStrC[250];
+    size_t wLen = 0;
+    errno_t err = 0;
+
+    //ロケール指定
+    setlocale(LC_ALL, "japanese");
+
+    //変換
+    err = wcstombs_s(&wLen, wStrC, 250, intxto, _TRUNCATE);
+    char* sMstr = (char*)malloc(100);
+    char* inMainstr = (char*)malloc(100);
+    sMstr = SJIStoUTF8(wStrC, sMstr, 100);
+
+    int wlen = 0;
+    while (sMstr[wlen] != '\0') {
+        inMainstr[wlen] = sMstr[wlen];
+        wlen++;
+    }
+    inMainstr[wlen] = '\0';
+    std::cout << "wchar to char : " << inMainstr << " " << wLen << std::endl;
     */
+    
+    //------------- パッキングリスト--------------------//
+    std::ifstream PLR(PLfile, std::ios::in | std::ios::binary);
+    if (!PLR)
+        return 0;
+
+    HeaderRead* hr = new HeaderRead(PLfile);
+    CenterDerect* cddata = nullptr;//セントラルディレクトのデータ
+    hr->endread(&PLR);//終端コードの読み込み
+    hr->freeER();
+
+    DeflateDecode* decShare = new DeflateDecode(&PLR);
+    //share セントラル取得
+    while (hr->filenum < hr->ER->centralsum) {//cddata mallocなし
+        cddata = hr->centeroneread(hr->readpos, hr->ER->size, hr->ER->centralsum, shares, &PLR);
+        if (cddata) {
+            break;
+        }
+        //hr->freeheader();
+    }
+    if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
+        hr->localread(cddata->localheader, &PLR);//sharesstringsの読み込み
+        decShare->dataread(hr->LH->pos, cddata->nonsize);
+    }
+
+    shareRandD* sharray = new shareRandD(decShare->ReadV, decShare->readlen);//share string read to array
+    sharray->getSicount();//get si count
+    sharray->ReadShare();//文字列読み込み デコードデータ削除OK
+    delete decShare;
+
+    //------share read---------//
+    DeflateDecode* decsheet = new DeflateDecode(&PLR);
+    hr->filenum = 0;//レコード数初期化
+    hr->readpos = hr->ER->position;
+    cddata = nullptr;
+    while (hr->filenum < hr->ER->centralsum) {
+        cddata = hr->centeroneread(hr->readpos, hr->ER->size, hr->ER->centralsum, sheetname, &PLR);//セントラルディレクトのデータ
+        if (cddata) {
+            break;
+        }
+        //hr->freeheader();
+    }
+    if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
+        hr->localread(cddata->localheader, &PLR);//sharesstringsの読み込み
+        decsheet->dataread(hr->LH->pos, cddata->nonsize);
+    }
+
+    Ctags* ms = new Ctags(decsheet->ReadV, decsheet->readlen, sharray);
+
+    ms->sheetread();
+
+    delete decsheet;//デコードデータ削除
+
+    shipinfo* sg = new shipinfo(ms->rows);//シートデータ参照　freeなし
+    sg->GetItems();//mallocなし　シートとセット
+
+    PLR.close();
+
+    delete sg;
+    delete sharray;
+    delete ms;
+
     /*-----------------------
        shareシート読み込み
      -----------------------*/
-
-    CenterDerect* cddata = nullptr;
+    cddata = nullptr;
 
     std::ifstream Zr(Zfn, std::ios::in | std::ios::binary);
     if (!Zr) {
@@ -114,11 +224,10 @@ int main(char* fname[], int i) {
     HeaderRead* hr2 = new HeaderRead(Zfn);
 
     hr2->endread(&Zr);//終端コードの読み込み
-    DeflateDecode* decShare = new DeflateDecode(&Zr);
+    decShare = new DeflateDecode(&Zr);
 
     while (hr2->filenum < hr2->ER->centralsum) {
         cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, shares, &Zr);
-
         if (cddata)
             break;
     }
@@ -127,10 +236,9 @@ int main(char* fname[], int i) {
         hr2->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
         decShare->dataread(hr2->LH->pos, cddata->nonsize);
     }
-    shareRandD* sharray = new shareRandD(decShare->ReadV, decShare->readlen);//share 再初期化 検索用に呼び出し
+    sharray = new shareRandD(decShare->ReadV, decShare->readlen);//share 再初期化 検索用に呼び出し
 
     sharray->getSicount();//get si count
-
     sharray->ReadShare();//文字列読み込み
     delete hr2;
     delete decShare;
@@ -146,13 +254,11 @@ int main(char* fname[], int i) {
     DeflateDecode* Sdeco = new DeflateDecode(&Zr);
 
     while (hr2->filenum < hr2->ER->centralsum) {
-
         cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, stylefn, &Zr);
         if (cddata)
             break;
-        hr2->freeheader();
+        //hr2->freeheader();
     }
-
     if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
         hr2->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
         Sdeco->dataread(hr2->LH->pos, cddata->nonsize);
@@ -173,7 +279,83 @@ int main(char* fname[], int i) {
     //zozo 711
     //shoplist 715
     ArrayNumber* changeStr = new ArrayNumber;
-    std::cout << std::endl;
+    UINT32 styleleng = Sdeco->readlen;//style 解凍データ長
+    UINT8 be[] = "bee";    
+
+    sr->configstyle(be);
+    sr->styledatawrite(styleleng);
+
+    for (UINT64 i = 0; i < sr->wdlen;i++)
+        fwrite(&sr->wd[i], sizeof(char), 1, f);
+    fclose(f);
+
+    delete sr;
+    delete Sdeco;
+
+    /*-----------------------
+
+   発注到着シート読み込み
+
+   -----------------------*/
+
+    DeflateDecode* Hdeco=nullptr;
+
+    char sheet[] = "worksheets/sheet";
+
+    bool t = false;
+    Ctags* mh;//発注到着　cell データ読み込み
+    CDdataes* slideCDdata = hr2->saveCD;//ファイル名検索用
+    searchItemNum* sI = nullptr;//品番検索　＆　書き込み
+
+    hr2->readpos = hr2->ER->position;//読み込み位置初期化
+    hr2->filenum = 0;//レコード数初期化
+    int result = 0;
+
+    //品番、カラーエラー用
+    MatchColrs* matchs = nullptr;
+    MatchColrs* matchsroot = nullptr;
+
+    while (hr2->filenum < hr2->ER->centralsum) {
+        //ファイル名 sheet 部分一致検索
+        cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, sheet, &Zr);
+        if (cddata) {
+            std::cout << "sheet一致ファイルネーム：" << cddata->filename<<" "<< cddata->nonsize << std::endl;
+            hr2->localread(cddata->localheader, &Zr);//"worksheets/sheet"に一致するファイルの中身検索
+
+            Hdeco = new DeflateDecode(&Zr);//解凍
+            Hdeco->dataread(hr2->LH->pos, cddata->nonsize);//解凍　データ読み込み
+            
+            mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, sharray);//シートデータ読み込み
+            mh->sheetread();
+            
+            //sI = new searchItemNum(sg->its, mh);
+            //t = sI->searchitemNumber(sharray->uniqstr, sharray->inputsinum[3], sharray->inputsinum[2], sharray->inputsinum[1], sharray->inputsinum[0], (char*)styleset, setstyle->celstyle);
+
+            encoding* enc = new encoding;//圧縮
+            enc->compress(mh->wd, mh->p);//データ圧縮
+            delete enc;       
+            
+            
+            delete mh;
+            delete Hdeco;//デコードデータ　削除 
+        }
+        //hr2->freeheader();
+        //hr2->freeLH();
+    }
+
+    std::cout << "end item search" << std::endl;
+
+    delete sharray;
+
+    delete hr2;
+
+    Zr.close();
+    //_CrtDumpMemoryLeaks();//メモリ リーク レポートを表示
+
+    return 0;
+}
+/*
+std::cout << std::endl;
     std::cout << "style 1012 cellXfs 検索" << std::endl;
     std::cout << std::endl;
     if (sr->cellXfsRoot[1012]->numFmtId)
@@ -363,112 +545,9 @@ int main(char* fname[], int i) {
         char* csnb = sIN.CharChenge(sr->cellStyleRoot[res]->name);
         std::cout << "name : " << csnb << std::endl;
     }
-        
+
     if (sr->cellStyleRoot[res]->xfId)
         std::cout << "xfId : " << sr->cellStyleRoot[res]->xfId << std::endl;
     if (sr->cellStyleRoot[res]->xruid)
         std::cout << "xruid : " << sr->cellStyleRoot[res]->xruid << std::endl;
-
-    UINT32 styleleng = Sdeco->readlen;//style 解凍データ長
-    UINT8 be[] = "bee";    
-
-    sr->configstyle(be);
-    sr->styledatawrite(styleleng);
-
-    for (UINT64 i = 0; i < sr->wdlen;i++)
-        fwrite(&sr->wd[i], sizeof(char), 1, f);
-
-    delete sr;
-
-    delete Sdeco;
-
-    /*-----------------------
-
-   発注到着シート読み込み
-
-   -----------------------*/
-
-    DeflateDecode* Hdeco;
-
-    char sheet[] = "worksheets/sheet";
-
-    bool t = false;
-    Ctags* mh;//発注到着　cell データ読み込み
-    CDdataes* slideCDdata = hr2->saveCD;//ファイル名検索用
-
-    hr2->readpos = hr2->ER->position;//読み込み位置初期化
-
-    hr2->filenum = 0;//レコード数初期化
-
-    int result = 0;
-
-    while (hr2->filenum < hr2->ER->centralsum) {
-        //ファイル名 sheet 部分一致検索
-
-        cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, sheet, &Zr);
-
-        if (cddata) {
-            std::cout << "sheet一致ファイルネーム：" << cddata->filename << std::endl;
-
-            char wrfn[500] = { 0 };
-            int i = 0;
-            int le = 0;
-            while (wridata[le] != '\0') {
-                wrfn[le] = wridata[le];
-                le++;
-            }
-            while (cddata->filename[i] != '\0') {
-                wrfn[le] = cddata->filename[i];
-                i++; le++;
-            }
-            wrfn[le] = '\0';
-
-            std::cout << "filename make：" << wrfn << std::endl;
-
-            FILE *fwr;
-            fopen_s(&fwr, wrfn, "wb");
-
-            if (!fwr)
-                return 0;
-
-            hr2->localread(cddata->localheader, &Zr);//"worksheets/sheet"に一致するファイルの中身検索
-
-            Hdeco = new DeflateDecode(&Zr);//解凍
-            Hdeco->dataread(hr2->LH->pos, cddata->nonsize);//解凍　データ読み込み
-
-            std::cout << "decode len : "<<cddata->nonsize << std::endl;
-            
-            mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, sharray);//シートデータ読み込み
-            mh->sheetread();
-            mh->writesheetdata();
-
-            encoding* enc = new encoding;//圧縮
-            enc->compress(mh->wd, mh->p);//データ圧縮
-            delete enc;
-            
-            for (int h = 0; h < mh->p; h++) {
-                fwrite(&mh->wd[h], 1, 1, fwr);
-            }            
-            
-            hr2->freeLH();
-            delete mh;
-            delete Hdeco;//デコードデータ　削除 
-        }
-        hr2->freeheader();        
-    }
-
-    std::cout << "end item search" << std::endl;
-
-    delete sharray;
-
-    delete hr2;
-
-    Zr.close();
-
-    fclose(f);
-
-    //_CrtDumpMemoryLeaks();//メモリ リーク レポートを表示
-
-    return 0;
-
-}
+        */

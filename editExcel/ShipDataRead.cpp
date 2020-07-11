@@ -62,7 +62,7 @@ UINT8* shipinfo::outuntil(UINT8 c, UINT8* st)
 
     while (st[j] != c && st[j] != '\0')
         j++;
-    
+
     const UINT32 msize = (UINT32)j + 1;
     p = (UINT8*)malloc(msize);
 
@@ -81,7 +81,7 @@ UINT8* shipinfo::outuntil(UINT8 c, UINT8* st)
     }
     else {
         int t = 0; int h = 0;
-        
+
 
         if (p) {
             while (h < j) {
@@ -134,37 +134,37 @@ bool shipinfo::searchitemCell() {
     while (sr) {
         while (sr->cells) {
             if (sr->cells->si) {
-                if (strcmp((const char*)sr->cells->si, IN[0]) == 0) {
+                if (strcmp((const char*)sr->cells->si, INt[0]) == 0) {
                     ITcells[0] = sr->cells->col; ITEMrow = sr->r;
                 }
-                else if (strcmp((const char*)sr->cells->si, IN[1]) == 0) {
+                else if (strcmp((const char*)sr->cells->si, INt[1]) == 0) {
                     ITcells[1] = sr->cells->col;
                 }
-                else if (strcmp((const char*)sr->cells->si, IN[2]) == 0) {
+                else if (strcmp((const char*)sr->cells->si, INt[2]) == 0) {
                     ITcells[2] = sr->cells->col;
                 }
-                else if (strcmp((const char*)sr->cells->si, IN[3]) == 0) {
+                else if (strcmp((const char*)sr->cells->si, INt[3]) == 0) {
                     ITcells[3] = sr->cells->col;
                 }
-                else if (strcmp((const char*)sr->cells->si, IN[4]) == 0) {
+                else if (strcmp((const char*)sr->cells->si, INt[4]) == 0) {
                     ITcells[4] = sr->cells->col;
                 }
-                else if (strcmp((const char*)sr->cells->si, IN[5]) == 0) {
+                else if (strcmp((const char*)sr->cells->si, INt[5]) == 0) {
                     ITcells[5] = sr->cells->col;
                 }
-                else if (strcmp((const char*)sr->cells->si, IN[6]) == 0) {
+                else if (strcmp((const char*)sr->cells->si, INt[6]) == 0) {
                     ITcells[6] = sr->cells->col;
                 }
-                else if (strcmp((const char*)sr->cells->si, IN[7]) == 0) {
+                else if (strcmp((const char*)sr->cells->si, INt[7]) == 0) {
                     ITcells[7] = sr->cells->col;
                 }
-                else if (strcmp((const char*)sr->cells->si, IN[8]) == 0) {
+                else if (strcmp((const char*)sr->cells->si, INt[8]) == 0) {
                     ITcells[8] = sr->cells->col;
                 }
-                else if (strcmp((const char*)sr->cells->si, IN[9]) == 0) {
+                else if (strcmp((const char*)sr->cells->si, INt[9]) == 0) {
                     ITcells[9] = sr->cells->col;
                 }
-                else if (strcmp((const char*)sr->cells->si, IN[10]) == 0) {
+                else if (strcmp((const char*)sr->cells->si, INt[10]) == 0) {
                     ITcells[10] = sr->cells->col;
                     return 1;
                 }
@@ -180,19 +180,19 @@ void shipinfo::GetItems() {
     Row* sr = cells;
     bool itemnumFlag = false;
 
-    UINT8* IN = (UINT8*)malloc(1); IN = nullptr;
-    UINT8* Colo = (UINT8*)malloc(1); Colo = nullptr;
-    UINT8* nine = (UINT8*)malloc(1); nine = nullptr;
-    UINT8* ten = (UINT8*)malloc(1); ten = nullptr;
-    UINT8* ele = (UINT8*)malloc(1); ele = nullptr;
-    UINT8* twe = (UINT8*)malloc(1); twe = nullptr;
-    UINT8* thr = (UINT8*)malloc(1); thr = nullptr;
-    UINT8* four = (UINT8*)malloc(1); four = nullptr;
-    UINT8* fif = (UINT8*)malloc(1); fif = nullptr;
-    UINT8* six = (UINT8*)malloc(1); six = nullptr;
-    UINT8* f = (UINT8*)malloc(1); f = nullptr;
+    UINT8* INt = nullptr;
+    UINT8* Colo = nullptr;
+    UINT8* nine = nullptr;
+    UINT8* ten = nullptr;
+    UINT8* ele = nullptr;
+    UINT8* twe = nullptr;
+    UINT8* thr = nullptr;
+    UINT8* four = nullptr;
+    UINT8* fif = nullptr;
+    UINT8* six = nullptr;
+    UINT8* f = nullptr;
 
-    shipdataRead();
+    //shipdataRead();
 
     searchitemCell();
 
@@ -206,25 +206,17 @@ void shipinfo::GetItems() {
     int j = 0;
     while (sr) {
         while (sr->cells) {
-            //std::cout << "item cell Si : " << sr->cells->si << std::endl;
+
             if (sr->cells->col == ITcells[0] && ITcells[0] != 0) {//numbe
                 j = 0;
                 if (sr->cells->si) {
-                    //std::cout << "item cell Si : " << sr->cells->si << std::endl;
-                    //while (sr->cells->si[j] != '\0')
-                    //    j++;
-
-                    //IN = (UINT8*)malloc(j);
-                    IN = outuntil('(', sr->cells->si);
+                    INt = outuntil('(', sr->cells->si);
                     itemnumFlag = true;
                 }
             }
             if (sr->cells->col == ITcells[1] && itemnumFlag && ITcells[1] != 0) {//color
                 j = 0;
                 if (sr->cells->si) {
-                   // while (sr->cells->si[j] != '\0')
-                    //    j++;
-                    //Colo = (UINT8*)malloc(j);
                     Colo = outuntil('(', sr->cells->si);
                 }
                 else if (sr->cells->val) {
@@ -314,10 +306,10 @@ void shipinfo::GetItems() {
 
                 itemnumFlag = false;
 
-                its = additem(its, IN, Colo, nine, ten, ele, twe, thr, four, fif, six, f);
+                its = additem(its, INt, Colo, nine, ten, ele, twe, thr, four, fif, six, f);
 
 
-                IN = nullptr; Colo = nullptr; nine = nullptr; ten = nullptr;; ele = nullptr;
+                INt = nullptr; Colo = nullptr; nine = nullptr; ten = nullptr;; ele = nullptr;
                 twe = nullptr; thr = nullptr; four = nullptr; fif = nullptr; six = nullptr; f = nullptr;
             }
             sr->cells = sr->cells->next;

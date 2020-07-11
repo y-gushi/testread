@@ -11,14 +11,14 @@ searchItemNum::~searchItemNum() {
 
 }
 
-bool searchItemNum::searchitemNumber(UINT8* uniq,inputtxt* iptxt,int sicounts) {
+bool searchItemNum::searchitemNumber(UINT8* uniq, char* one, char* two, char* three, char* four, char* style, char* celstyle) {
     Row* sr = nullptr;
     sr = Cels->rows;
     Items* Item = nullptr;
     Item = its;
     UINT8* nr = nullptr;//文字入力行　配列
     int result = 0;
-    const char* SaT[] = { "s", "1221" };
+    const char* SaT[] = { "s", "1127" };
     bool incellflag = false;
     UINT8* matchItem = nullptr;
 
@@ -52,30 +52,101 @@ bool searchItemNum::searchitemNumber(UINT8* uniq,inputtxt* iptxt,int sicounts) {
             break;
         sr = sr->next;
     }
-    //入力テキスト最後の参照まで進める
-    if (iptxt) {
-        while (iptxt->next)
-            iptxt = iptxt->next;
-    }
-    
+
     if (!incellflag)
         return false;//品番一致なし
     else {
-        std::cout << "一致品番 : " << Item->itn << std::endl;
-        int rowslide = startR;
-        Cels->addcelldata(nr, incolumn, (UINT8*)SaT[0], (UINT8*)SaT[1], uniq, nullptr, nullptr);//最初の一回に変更 メインの日付追加
+        UINT32 rowslide = startR;
+
+        char* tv = (char*)malloc(2);
+        strcpy_s(tv, 2, SaT[0]);
+
+        size_t sstrl = strlen((const char*)style) + 1;
+        char* sv = (char*)malloc(sstrl);
+        strcpy_s(sv, sstrl, style);
+
+        size_t vlen = strlen((const char*)uniq) + 1;
+        char* vst = (char*)malloc(vlen);
+        strcpy_s(vst, vlen, (const char*)uniq);
+
+        F* nulf = nullptr;
+        UINT8* nulsi = nullptr;
+        Cels->addcelldata(nr, incolumn, (UINT8*)tv, (UINT8*)sv, (UINT8*)vst, nulf, nulsi);//最初の一回に変更 メインの日付追加
         //サブ文字列追加
-        if (iptxt) {
-            //サブ入力文字があれば　セルに追加
-            while (iptxt) {//後ろから入力
-                rowslide--;
-                UINT8* srow = changenum.InttoChar(rowslide, &result);
-                if (!iptxt->sinum)
-                    return false;
-                std::cout << "入力文字 : " << iptxt->sinum << std::endl;
-                Cels->addcelldata(srow, incolumn, (UINT8*)SaT[0], (UINT8*)SaT[1], iptxt->sinum, nullptr, nullptr);
-                iptxt = iptxt->parrent;
-            }
+        if (one) {
+            rowslide--;
+            UINT8* srow = changenum.InttoChar(rowslide, &result);
+
+            char* tvs = (char*)malloc(2);
+            strcpy_s(tvs, 2, SaT[0]);
+
+            char* svs = (char*)malloc(sstrl);
+            strcpy_s(svs, sstrl, style);
+
+            size_t vlen = strlen((const char*)one) + 1;
+            char* vsts = (char*)malloc(vlen);
+            strcpy_s(vsts, vlen, (const char*)one);
+
+            F* nfs = nullptr;
+            UINT8* nsis = nullptr;
+
+            Cels->addcelldata(srow, incolumn, (UINT8*)tvs, (UINT8*)svs, (UINT8*)vsts, nfs, nsis);
+        }
+        if (two) {
+            rowslide--;
+            UINT8* srow = changenum.InttoChar(rowslide, &result);
+
+            char* tvs = (char*)malloc(2);
+            strcpy_s(tvs, 2, SaT[0]);
+
+            char* svs = (char*)malloc(sstrl);
+            strcpy_s(svs, sstrl, style);
+
+            size_t vlen = strlen((const char*)two) + 1;
+            char* vsts = (char*)malloc(vlen);
+            strcpy_s(vsts, vlen, (const char*)two);
+
+            F* nfs = nullptr;
+            UINT8* nsis = nullptr;
+
+            Cels->addcelldata(srow, incolumn, (UINT8*)tvs, (UINT8*)svs, (UINT8*)vsts, nfs, nsis);
+        }
+        if (three) {
+            rowslide--;
+            UINT8* srow = changenum.InttoChar(rowslide, &result);
+
+            char* tvs = (char*)malloc(2);
+            strcpy_s(tvs, 2, SaT[0]);
+
+            char* svs = (char*)malloc(sstrl);
+            strcpy_s(svs, sstrl, style);
+
+            size_t vlen = strlen((const char*)three) + 1;
+            char* vsts = (char*)malloc(vlen);
+            strcpy_s(vsts, vlen, (const char*)three);
+
+            F* nfs = nullptr;
+            UINT8* nsis = nullptr;
+
+            Cels->addcelldata(srow, incolumn, (UINT8*)tvs, (UINT8*)svs, (UINT8*)vsts, nfs, nsis);
+        }
+        if (four) {
+            rowslide--;
+            UINT8* srow = changenum.InttoChar(rowslide, &result);
+
+            char* tvs = (char*)malloc(2);
+            strcpy_s(tvs, 2, SaT[0]);
+            char* svs = (char*)malloc(sstrl);
+            strcpy_s(svs, sstrl, style);
+
+            size_t vlen = strlen((const char*)four) + 1;
+            char* vsts = (char*)malloc(vlen);
+            strcpy_s(vsts, vlen, (const char*)four);
+
+            F* nfs = nullptr;
+            UINT8* nsis = nullptr;
+
+            Cels->addcelldata(srow, incolumn, (UINT8*)tvs, (UINT8*)svs, (UINT8*)vsts, nfs, nsis);
         }
     }
 
@@ -85,7 +156,7 @@ bool searchItemNum::searchitemNumber(UINT8* uniq,inputtxt* iptxt,int sicounts) {
         sr = Cels->rows;
         result = strcmp((const char*)matchItem, (const char*)Item->itn);//品番　シートデータの比較
         if (result == 0) {
-            colorsearch(sr, Item, Item->itn);
+            colorsearch(sr, Item, Item->itn, celstyle);
         }
         Item = Item->next;
     }
@@ -93,20 +164,18 @@ bool searchItemNum::searchitemNumber(UINT8* uniq,inputtxt* iptxt,int sicounts) {
     return incellflag;
 }
 
-void searchItemNum::colorsearch(Row* inrow, Items* IT, UINT8* itn) {
+void searchItemNum::colorsearch(Row* inrow, Items* IT, UINT8* itn, char* s) {
     const char* sizetable[] = { "090","100","110","120","130","140","150","160","F" };
-    const char* style[] = { "1206","28","29" };
-    UINT8 middle[] = "1206";
     Row* color = inrow;// = (Row*)malloc(sizeof(Row))
-    UINT8* nextColor = (UINT8*)malloc(1); nextColor = nullptr;
-    UINT8* nextSize = (UINT8*)malloc(1); nextSize = nullptr;
-    UINT8* nowColor = (UINT8*)malloc(1); nowColor = nullptr;
-    UINT8* nowSize = (UINT8*)malloc(1); nowSize = nullptr;
-    UINT8* beforeColor = (UINT8*)malloc(1); beforeColor = nullptr;
-    UINT8* beforeSize = (UINT8*)malloc(1); beforeSize = nullptr;
-    ColorAnSize* CandS;
-    Items* ite = (Items*)malloc(sizeof(Items));
-    ite = IT;
+    UINT8* nextColor = nullptr;
+    UINT8* nextSize = nullptr;
+    UINT8* nowColor = nullptr;
+    UINT8* nowSize = nullptr;
+    UINT8* beforeColor = nullptr;
+    UINT8* beforeSize = nullptr;
+    ColorAnSize* CandS = nullptr;
+    Items* ite = IT;
+
     bool b = false;
     bool n = false;
     int result = 0;
@@ -123,7 +192,6 @@ void searchItemNum::colorsearch(Row* inrow, Items* IT, UINT8* itn) {
     if (color && color->next) {
         color = color->next;//品番次の行
     }
-    std::cout << "一致品番 : " << itn << std::endl;
 
     while (color) {
         if (color->cells) {
@@ -135,38 +203,35 @@ void searchItemNum::colorsearch(Row* inrow, Items* IT, UINT8* itn) {
                 //全角変換
                 ite->col = sear.changenumber(ite->col);
 
-                char* shcol = CharChenge(ite->col);
-                //std::cout << "パッキング　全角変換：" << shcol << std::endl;
-
                 color->cells->si = sear.changeKana(color->cells->si);//かな変換
                 color->cells->si = sear.changenumber(color->cells->si);
 
                 ite->col = sear.slipNum(ite->col);//連続数字　削除
 
-                char* acol = CharChenge(color->cells->si);
-                std::cout << "かな全角変換：" << acol << std::endl;
-                shcol = CharChenge(ite->col);
-                std::cout << "パッキング　連続数字　削除：" << shcol << std::endl;
-
                 matchflag = Mstr.seachcharactors(ite->col, color->cells->si, i, 0);//セルカラーとアイテムの比較　部分検索
                 if (matchflag != -1) {
                     CandS = Mstr.splitColor(color->cells->si);//カラーとサイズの分割
                     if (CandS->color && CandS->size) {
+                        free(nowColor); free(nowSize);
                         nowColor = CandS->color; nowSize = CandS->size;
                     }
                     else {
                         nowColor = nullptr; nowSize = nullptr;
                     }
+                    /*
+                    //境界検索
                     if (color->next) {
                         if (color->next->cells) {
                             if (color->next->cells->si) {
                                 i = 0;
                                 while (color->next->cells->si[i] != '\0')//文字数カウント
                                     i++;
-                                //次の色全角半角変換
-                                color->next->cells->si = sear.changenumber(color->next->cells->si);
+                                color->next->cells->si = sear.changeKana(color->next->cells->si);//かな変換
+                                color->next->cells->si = sear.changenumber(color->next->cells->si);//次の色全角半角変換
+
                                 matchflag = Mstr.seachcharactors(ite->col, color->next->cells->si, i, 0);//セルカラーとアイテムの比較　部分検索
                                 if (matchflag != -1) {
+                                    free(nextColor); free(nextSize);
                                     ColorAnSize* nCandnS = Mstr.splitColor(color->next->cells->si);//カラーとサイズの分割
                                     nextColor = nCandnS->color;
                                     nextSize = nCandnS->size;
@@ -187,14 +252,13 @@ void searchItemNum::colorsearch(Row* inrow, Items* IT, UINT8* itn) {
                     else {
                         nextColor = nullptr; nextSize = nullptr;
                     }
+                    */
                     if (nowColor && nowSize) {
                         result = strcmp((const char*)nowColor, (const char*)ite->col);//カラー比較
                         if (result == 0) {//カラー一致
-
                             for (int i = 0; i < 9; i++) {//サイズループ
                                 result = strcmp((const char*)nowSize, (const char*)sizetable[i]);
-                                if (result == 0) {//サイズ一致
-                                   
+                                if (result == 0) {//サイズ一致                                   
                                     UINT8* sizeMatch = nullptr;//サイズ保存用
                                     switch (i) {//該当サイズ
                                     case 0:sizeMatch = ite->s90; break;
@@ -207,73 +271,78 @@ void searchItemNum::colorsearch(Row* inrow, Items* IT, UINT8* itn) {
                                     case 7:sizeMatch = ite->s160; break;
                                     case 8:sizeMatch = ite->sF; break;
                                     default:
-                                        sizeMatch=(UINT8*)malloc(1);
-                                        sizeMatch = nullptr; 
                                         break;
                                     }
                                     if (sizeMatch) {
-                                        rootMat = addmatches(rootMat, itn, nowColor);//カラー、サイズ一致で保存
+                                        UINT8* itnadd = strtalloc(itn);
+                                        UINT8* mcol = strtalloc(nowColor);
+                                        rootMat = addmatches(rootMat, itnadd, mcol);//カラー、サイズ一致で保存
 
                                         UINT8* nr = changenum.InttoChar(color->r, &result);
-                                        Cels->addcelldata(nr, incolumn, nullptr, (UINT8*)style[0], sizeMatch, nullptr, nullptr);
 
-                                        /*
-                                        if (beforeColor) {
-                                            result = strcmp((const char*)nowColor, (const char*)beforeColor);
-                                            if (result == 0) {
-                                                b = true;
-                                            }
-                                            else {
-                                                b = false;
-                                            }
-                                        }
-                                        else {
-                                            b = false;
-                                        }
-                                        if (nextColor) {
-                                            result = strcmp((const char*)nowColor, (const char*)nextColor);
-                                            if (result == 0) {
-                                                n = true;
-                                            }
-                                            else {
-                                                n = false;
-                                            }
-                                        }
-                                        else {
-                                            n = false;
-                                        }
-                                        if (b && n) {//真ん中　書き込み
-                                            UINT8* nr = changenum.InttoChar(color->r, &result);
-                                            Cels->addcelldata(nr, incolumn, nullptr, (UINT8*)style[1], sizeMatch, nullptr, nullptr);
-                                        }
-                                        else if (b && !n) {//した　書き込み
-                                            UINT8* nr = changenum.InttoChar(color->r, &result);
-                                            Cels->addcelldata(nr, incolumn, nullptr, (UINT8*)style[2], sizeMatch, nullptr, nullptr);
-                                        }
-                                        else {//上　書き込み
-                                            UINT8* nr = changenum.InttoChar(color->r, &result);
-                                            Cels->addcelldata(nr, incolumn, nullptr, (UINT8*)style[0], sizeMatch, nullptr, nullptr);
-                                        }
-                                        */
+                                        UINT8* sv = strtalloc((UINT8*)s);
+
+                                        UINT8* sizadd = strtalloc(sizeMatch);
+
+                                        UINT8* TV = nullptr;
+                                        UINT8* SVI = nullptr;
+                                        F* FV = nullptr;
+                                        Cels->addcelldata(nr, incolumn, TV, sv, sizadd, FV, SVI);
+
                                     }
                                 }
                             }
                         }
                     }
                 }
-
             }
+            /*
+            //境界検索
             if (color->cells->si) {
-                beforeColor = nowColor;
-                beforeSize = nowSize;
+                free(beforeSize); free(beforeColor);
+                if (nowColor) {
+                    beforeColor = strtalloc(nowColor);
+                }
+                else {
+                    beforeColor = nullptr;
+                }
+                if (nowSize) {
+                    beforeSize = strtalloc(nowSize);
+                }
+                else {
+                    beforeSize = nullptr;
+                }
             }
             else {
                 beforeColor = nullptr;
                 beforeSize = nullptr;
             }
+            */
         }
         color = color->next;
     }
+    //free(beforeSize); free(beforeColor);
+    //free(nextColor); free(nextSize);
+    free(nowColor); free(nowSize);
+}
+
+void searchItemNum::freerootmacht(MatchColrs* m) {
+    MatchColrs* p = nullptr;
+    while (m) {
+        p = m->next;
+        free(m->color);
+        free(m->itemnum);
+        free(m);
+        m = p;
+    }
+}
+
+UINT8* searchItemNum::strtalloc(UINT8* s) {
+    size_t sizlen = strlen((const char*)s) + 1;
+    UINT8* sizadd = (UINT8*)malloc(sizlen);
+    strcpy_s((char*)sizadd, sizlen, (const char*)s);
+
+    return sizadd;
 }
 
 MatchColrs* searchItemNum::addmatches(MatchColrs* m, UINT8* i, UINT8* c)

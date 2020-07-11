@@ -153,6 +153,7 @@
     <ClCompile Include="SearchItemNUm.cpp" />
     <ClCompile Include="shareRandW.cpp" />
     <ClCompile Include="SheetWriteAndMake.cpp" />
+    <ClCompile Include="ShipDataRead.cpp" />
     <ClCompile Include="slidewindow.cpp" />
     <ClCompile Include="StrMargeAndSearch.cpp" />
     <ClCompile Include="timeget.cpp" />
