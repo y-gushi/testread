@@ -76,8 +76,8 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
                 UINT8* n2 = nullptr;
                 UINT8* n3 = nullptr;
                 F* n4 = nullptr;
-                UINT8* sv = (UINT8*)malloc(4);
-                strcpy_s((char*)sv, 4, (const char*)nomals);
+                UINT8* sv = (UINT8*)malloc(5);
+                strcpy_s((char*)sv, 5, (const char*)nomals);
                 ro->cells = addCtable(ro->cells, n1, sv, n2, incolnum, n3, n4);
             }
             NA.ColumnIncliment(&incolnum);

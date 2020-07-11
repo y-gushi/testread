@@ -116,7 +116,7 @@ int main(char* fname[], int i) {
     char shares[] = "sharedStrings.xml";
     char stylefn[] = "xl/styles.xml";
     char sheetname[] = "worksheets/sheet1.xml";
-    /*
+    
     WCHAR wStrW[] = _T("2020,ship,5/19着");
     //変換文字列格納バッファ
     wchar_t intxto[] = _T("2020,shiptyt着");
@@ -147,7 +147,7 @@ int main(char* fname[], int i) {
     }
     inMainstr[wlen] = '\0';
     std::cout << "wchar to char : " << inMainstr << " " << wLen << std::endl;
-    */
+    
     
     //------------- パッキングリスト--------------------//
     std::ifstream PLR(PLfile, std::ios::in | std::ios::binary);
@@ -205,59 +205,66 @@ int main(char* fname[], int i) {
     sg->GetItems();//mallocなし　シートとセット
 
     PLR.close();
-
     delete sharray;
 
     /*-----------------------
        shareシート読み込み
      -----------------------*/
-    cddata = nullptr;
-
     std::ifstream Zr(Zfn, std::ios::in | std::ios::binary);
-    if (!Zr) {
-        std::cout << "not open file" << std::endl;
+    if (!Zr)
         return 0;
-    }
 
     HeaderRead* hr2 = new HeaderRead(Zfn);
 
     hr2->endread(&Zr);//終端コードの読み込み
     decShare = new DeflateDecode(&Zr);
-
     while (hr2->filenum < hr2->ER->centralsum) {
         cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, shares, &Zr);
         if (cddata)
             break;
     }
-
     if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
         hr2->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
         decShare->dataread(hr2->LH->pos, cddata->nonsize);
     }
-    sharray = new shareRandD(decShare->ReadV, decShare->readlen);//share 再初期化 検索用に呼び出し
+    shareRandD *hattyushare = new shareRandD(decShare->ReadV, decShare->readlen);//share 再初期化 検索用に呼び出し
 
-    sharray->getSicount();//get si count
-    sharray->ReadShare();//文字列読み込み
+    hattyushare->getSicount();//get si count
+    hattyushare->ReadShare();//文字列読み込み
+    
+    //--- test txt
+    //char inMainstr[] = "mainstr";
+    char inSubstr[] = "432";
+    char inTwostr[] = "";
+    char inThreestr[] = "";
+    char inFourstr[] = "";
+    hattyushare->searchSi(inSubstr, inTwostr, inThreestr, inFourstr);//マッチした文字列のSi番号取得　なければnullptr
+
+    //シェアー書き込み
+    UINT8* sharedata = nullptr;//share書き込み　データ
+
+    sharedata = hattyushare->writeshare((UINT8*)inMainstr, strlen(inMainstr), inFourstr, inThreestr, inTwostr, inSubstr);//share文字列書き込み share data更新
+    UINT64 shrelength = hattyushare->writeleng;
+    free(sharedata);//書き込みデータ解放
     delete hr2;
     delete decShare;
-
     /*-----------------------
    スタイルシート読み込み
    -----------------------*/
 
-    hr2 = new HeaderRead(Zfn);
-    hr2->endread(&Zr);//終端コードの読み込み
+    HeaderRead *hHinfo = new HeaderRead(Zfn);
+    hHinfo->endread(&Zr);//終端コードの読み込み
     DeflateDecode* Sdeco = new DeflateDecode(&Zr);
 
-    while (hr2->filenum < hr2->ER->centralsum) {
-        cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, stylefn, &Zr);
+    while (hHinfo->filenum < hHinfo->ER->centralsum) {
+        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, stylefn, &Zr);
         if (cddata)
             break;
         //hr2->freeheader();
     }
     if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
-        hr2->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
-        Sdeco->dataread(hr2->LH->pos, cddata->nonsize);
+        hHinfo->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
+        Sdeco->dataread(hHinfo->LH->pos, cddata->nonsize);
     }
     FILE* f = nullptr;
     fopen_s(&f, mfile, "wb");
@@ -279,6 +286,12 @@ int main(char* fname[], int i) {
     UINT8 be[] = "bee";    
 
     sr->configstyle(be);
+
+    char* styleset = nullptr;
+    UINT32 memsiz = UINT32(sr->stylelen) + 1;
+    styleset = (char*)malloc(memsiz);
+    strcpy_s(styleset, memsiz, (const char*)sr->style);//style copy
+
     sr->styledatawrite(styleleng);
 
     for (UINT64 i = 0; i < sr->wdlen;i++)
@@ -299,56 +312,57 @@ int main(char* fname[], int i) {
     char sheet[] = "worksheets/sheet";
 
     bool t = false;
-    Ctags* mh;//発注到着　cell データ読み込み
-    CDdataes* slideCDdata = hr2->saveCD;//ファイル名検索用
-    searchItemNum* sI = nullptr;//品番検索　＆　書き込み
+    Ctags* mh=nullptr;//発注到着　cell データ読み込み
+    CDdataes* slideCDdata = hHinfo->saveCD;//ファイル名検索用
+    searchItemNum* sI=nullptr;//品番検索　＆　書き込み
 
-    hr2->readpos = hr2->ER->position;//読み込み位置初期化
-    hr2->filenum = 0;//レコード数初期化
+    hHinfo->readpos = hHinfo->ER->position;//読み込み位置初期化
+    hHinfo->filenum = 0;//レコード数初期化
     int result = 0;
 
     //品番、カラーエラー用
     MatchColrs* matchs = nullptr;
     MatchColrs* matchsroot = nullptr;
+    char teststyl[] = "200";//test用
 
-    while (hr2->filenum < hr2->ER->centralsum) {
+    while (hHinfo->filenum < hHinfo->ER->centralsum) {
         //ファイル名 sheet 部分一致検索
-        cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, sheet, &Zr);
+        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, sheet, &Zr);
+
         if (cddata) {
             std::cout << "sheet一致ファイルネーム：" << cddata->filename<<" "<< cddata->nonsize << std::endl;
-                        
-            //sI = new searchItemNum(sg->its, mh);
-            //t = sI->searchitemNumber(sharray->uniqstr, sharray->inputsinum[3], sharray->inputsinum[2], sharray->inputsinum[1], sharray->inputsinum[0], (char*)styleset, setstyle->celstyle);
-
-            hr2->localread(cddata->localheader, &Zr);//"worksheets/sheet"に一致するファイルの中身検索
-
             if (!Zr)
                 return 0;
+            hHinfo->localread(cddata->localheader, &Zr);//"worksheets/sheet"に一致するファイルの中身検索
+
             Hdeco = new DeflateDecode(&Zr);//解凍
-            Hdeco->dataread(hr2->LH->pos, cddata->nonsize);//解凍　データ読み込み
-
-            std::cout << "decode len : " << cddata->nonsize << std::endl;
-
-            mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, sharray);//シートデータ読み込み
+            Hdeco->dataread(hHinfo->LH->pos, cddata->nonsize);//解凍　データ読み込み
+            mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, hattyushare);//シートデータ読み込み
             mh->sheetread();
-            //mh->writesheetdata();
+                        
+            sI = new searchItemNum(sg->its, mh);
+            t = sI->searchitemNumber(hattyushare->uniqstr, hattyushare->inputsinum[3], hattyushare->inputsinum[2], hattyushare->inputsinum[1], hattyushare->inputsinum[0], (char*)styleset, teststyl);
+            if (t) {
+                mh->writesheetdata();//シートデータ書き込み
+                crc CRC;
+                CRC.rescrc();
+                CRC.mcrc(mh->wd, mh->p);//crc 計算
 
-            encoding* enc = new encoding;//圧縮
-            enc->compress(mh->wd, mh->p);//データ圧縮
-            delete enc;
-
-            hr2->freeLH();
+                encoding* enc = new encoding;//圧縮
+                enc->compress(mh->wd, mh->p);//データ圧縮
+                delete enc;                
+            }
             delete mh;
             delete Hdeco;//デコードデータ　削除
+            delete sI;
+            hHinfo->freeheader();
+            hHinfo->freeLH();
         }
-        //hr2->freeheader();
-        //hr2->freeLH();
     }
-
     std::cout << "end item search" << std::endl;
 
-    delete sharray;
-    delete hr2;
+    delete hattyushare;
+    delete hHinfo;
 
     delete sg;
     delete ms;
