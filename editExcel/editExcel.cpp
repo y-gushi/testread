@@ -206,9 +206,7 @@ int main(char* fname[], int i) {
 
     PLR.close();
 
-    delete sg;
     delete sharray;
-    delete ms;
 
     /*-----------------------
        shareシート読み込み
@@ -248,9 +246,7 @@ int main(char* fname[], int i) {
    -----------------------*/
 
     hr2 = new HeaderRead(Zfn);
-
     hr2->endread(&Zr);//終端コードの読み込み
-
     DeflateDecode* Sdeco = new DeflateDecode(&Zr);
 
     while (hr2->filenum < hr2->ER->centralsum) {
@@ -320,24 +316,30 @@ int main(char* fname[], int i) {
         cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, sheet, &Zr);
         if (cddata) {
             std::cout << "sheet一致ファイルネーム：" << cddata->filename<<" "<< cddata->nonsize << std::endl;
-            hr2->localread(cddata->localheader, &Zr);//"worksheets/sheet"に一致するファイルの中身検索
-
-            Hdeco = new DeflateDecode(&Zr);//解凍
-            Hdeco->dataread(hr2->LH->pos, cddata->nonsize);//解凍　データ読み込み
-            
-            mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, sharray);//シートデータ読み込み
-            mh->sheetread();
-            
+                        
             //sI = new searchItemNum(sg->its, mh);
             //t = sI->searchitemNumber(sharray->uniqstr, sharray->inputsinum[3], sharray->inputsinum[2], sharray->inputsinum[1], sharray->inputsinum[0], (char*)styleset, setstyle->celstyle);
 
+            hr2->localread(cddata->localheader, &Zr);//"worksheets/sheet"に一致するファイルの中身検索
+
+            if (!Zr)
+                return 0;
+            Hdeco = new DeflateDecode(&Zr);//解凍
+            Hdeco->dataread(hr2->LH->pos, cddata->nonsize);//解凍　データ読み込み
+
+            std::cout << "decode len : " << cddata->nonsize << std::endl;
+
+            mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, sharray);//シートデータ読み込み
+            mh->sheetread();
+            //mh->writesheetdata();
+
             encoding* enc = new encoding;//圧縮
             enc->compress(mh->wd, mh->p);//データ圧縮
-            delete enc;       
-            
-            
+            delete enc;
+
+            hr2->freeLH();
             delete mh;
-            delete Hdeco;//デコードデータ　削除 
+            delete Hdeco;//デコードデータ　削除
         }
         //hr2->freeheader();
         //hr2->freeLH();
@@ -346,8 +348,10 @@ int main(char* fname[], int i) {
     std::cout << "end item search" << std::endl;
 
     delete sharray;
-
     delete hr2;
+
+    delete sg;
+    delete ms;
 
     Zr.close();
     //_CrtDumpMemoryLeaks();//メモリ リーク レポートを表示
