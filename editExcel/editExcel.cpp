@@ -108,7 +108,7 @@ int main(char* fname[], int i) {
     //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
     char Zfn[] = "C:/Users/ryo19/OneDrive/デスクトップ/excelfiles/【1 在庫状況】.xlsx";
-    char PLfile[] = "C:/Users/ryo19/OneDrive/デスクトップ/excelfiles/LY200212-SHIP ゾゾ.xlsx"; //テスト書き出し
+    char PLfile[] = "C:/Users/ryo19/OneDrive/デスクトップ/excelfiles/LY20191127-SHIP BEE だけ.xlsx"; //テスト書き出し
     char mfile[] = "C:/Users/ryo19/OneDrive/デスクトップ/teststyle.xml"; //テスト書き出し
     char recd[] = "C:/Users/ryo19/OneDrive/デスクトップ/Centraldata"; //テスト書き出し
     char wridata[] = "C:/Users/ryo19/OneDrive/デスクトップ/xmls/";
