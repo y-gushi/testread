@@ -2,7 +2,6 @@
 
 #include "excel_style.h"
 
-
 class StyleWrite :public styleread
 {
 public:
@@ -14,6 +13,8 @@ public:
 	~StyleWrite();
 
 	void styledatawrite(UINT64 dlen);
+
+	void tablestylewrite();
 
 	void Dxfswrite();
 
@@ -82,12 +83,18 @@ inline void StyleWrite::styledatawrite(UINT64 dlen) {
 
 	Dxfswrite();
 
+	tablestylewrite();
+
 	writeColors();
 
 	writeextLst();
 
 	oneStrwrite((UINT8*)Endstyle);
 
+}
+
+inline void StyleWrite::tablestylewrite() {
+	oneStrwrite(tablestyle);
 }
 
 //write dxfs
@@ -103,6 +110,7 @@ inline void StyleWrite::Dxfswrite()
 
 	UINT8 col[] = "<color";
 	UINT8 rgb[] = " rgb=\"";
+	UINT8 them[] = " theme=\"";
 
 	UINT8 sfil[] = "<fill>";
 	UINT8 efil[] = "</fill>";
@@ -113,7 +121,8 @@ inline void StyleWrite::Dxfswrite()
 	UINT8 istr[] = "<i";
 
 	UINT8 val[] = " val=\"";
-
+	//theme="
+	//<b/><i/>
 	Dxf** dx = dxfRoot;
 	size_t cou = 0;
 
@@ -135,11 +144,12 @@ inline void StyleWrite::Dxfswrite()
 				oneStrplusDoubleq(val, dx[cou]->fon->ival);
 				oneStrwrite(et);
 			}
-
-			if (dx[cou]->fon->rgb)
-			{
+			if (dx[cou]->fon->theme || dx[cou]->fon->rgb) {
 				oneStrwrite(col);
-				oneStrplusDoubleq(rgb, dx[cou]->fon->rgb);
+				if (dx[cou]->fon->rgb)
+					oneStrplusDoubleq(rgb, dx[cou]->fon->rgb);
+				if (dx[cou]->fon->theme)
+					oneStrplusDoubleq(them, dx[cou]->fon->theme);
 				oneStrwrite(et);
 			}
 			oneStrwrite(fetag);
@@ -164,6 +174,7 @@ inline void StyleWrite::Dxfswrite()
 		oneStrwrite(etag);
 		cou++;
 	}
+	std::cout << "write dxfs count : " << cou << " , " << dxfsNm << std::endl;
 	oneStrwrite((UINT8*)Edxf);
 }
 
@@ -197,15 +208,14 @@ inline void StyleWrite::writeColors()
 
 		oneStrwrite((UINT8*)Ecolor);
 	}
-
 }
 
 //write 最初の文字列
 inline void StyleWrite::writefirst() {
 
-	UINT8 e[] = ">";
+	//UINT8 e[] = ">";
 	oneStrwrite(styleSheetStr);
-	oneStrwrite(e);
+	//oneStrwrite(e);
 }
 
 //write extLst
@@ -229,7 +239,7 @@ inline void StyleWrite::CELLStyle()
 	UINT8 xfid[] = " xfId=\"";
 	UINT8 xruid[] = " xr:uid=\"";
 	UINT8 bui[] = " builtinId=\"";
-	UINT8 cb[] = " customBuilt=\"";
+	UINT8 cb[] = " customBuiltin=\"";
 	cellstyle** cs = cellStyleRoot;
 
 	size_t cou = 0;
@@ -265,6 +275,7 @@ inline void StyleWrite::CELLStyle()
 		cou++;
 		
 	}
+	std::cout << "write cellstyle count : " << cou << " , " << cellstyleNum << std::endl;
 	oneStrwrite((UINT8*)Ecellsty);
 }
 
@@ -294,6 +305,7 @@ inline void StyleWrite::cellXfswrite()
 	UINT8 hor[] = " horizontal=\"";
 	UINT8 wt[] = " wrapText=\"";
 	UINT8 xi[] = " xfId=\"";
+	UINT8 qp[] = " quotePrefix=\"";
 
 	cellxfs** cx = cellXfsRoot;
 	size_t cou = 0;
@@ -302,7 +314,7 @@ inline void StyleWrite::cellXfswrite()
 	oneStrplusDoubleq((UINT8*)countstr, cellXfsCount);
 	oneStrwrite(e);
 
-	while (cou < cXcount) {
+	while (cou < cellXfsNum) {
 		oneStrwrite(stag);
 
 		if (cx[cou]->numFmtId)
@@ -319,6 +331,9 @@ inline void StyleWrite::cellXfswrite()
 
 		if (cx[cou]->applyNumberFormat)
 			oneStrplusDoubleq(an, cx[cou]->applyNumberFormat);
+
+		if (cx[cou]->quotePrefix)
+			oneStrplusDoubleq(qp, cx[cou]->quotePrefix);
 
 		if (cx[cou]->applyFont)
 			oneStrplusDoubleq(afo, cx[cou]->applyFont);
@@ -359,6 +374,7 @@ inline void StyleWrite::cellXfswrite()
 		}
 		cou++;
 	}
+	std::cout << "write cellxfs count : " << cou << " , " << cellXfsCount << std::endl;
 	oneStrwrite((UINT8*)Exfs);
 }
 
@@ -482,155 +498,93 @@ inline void StyleWrite::fontswrite()
 		cou++;
 
 	}
+	std::cout << "write font count : " << cou << " , " << fontCount << std::endl;
 	oneStrwrite((UINT8*)Efonts);
 }
-
-
 
 inline void StyleWrite::fillwrite()
 {
 
 	UINT8 cou[] = " count=\"";
 
-
-
 	UINT8 et[] = "/>";
-
 	UINT8 e[] = ">";
 
-
-
 	UINT8 sz[] = "<sz";
-
 	UINT8 col[] = "<color";
-
 	UINT8 na[] = "<name";
-
 	UINT8 fa[] = "<family";
 
-
-
 	UINT8 stag[] = "<fill>";
-
 	UINT8 etag[] = "</fill>";
 
-
-
 	UINT8 pat[] = "<patternFill";
-
 	UINT8 epat[] = "</patternFill>";
-
 	UINT8 patT[] = " patternType=\"";
 
-
-
 	UINT8 fg[] = "<fgColor";
-
 	UINT8 rgb[] = " rgb=\"";
-
 	UINT8 bg[] = "<bgColor";
-
 	UINT8 theme[] = " theme=\"";
-
 	UINT8 tint[] = " tint=\"";
-
 	UINT8 ind[] = " indexed=\"";
 
-
-
 	oneStrwrite((UINT8*)fills);
-
 	oneStrplusDoubleq(cou, fillCount);
-
 	oneStrwrite(e);
 
-
-
 	Fills** fi = fillroot;
-
 	size_t nu = 0;
 
 	while (nu < fillNum)
-
 	{
-
 		oneStrwrite(stag);
 
 		if (fi[nu]->patten) {
-
 			oneStrwrite(pat);
-
 			oneStrplusDoubleq(patT, fi[nu]->patten->patternType);
-
 		}
 
-
-
 		if (!fi[nu]->fg && !fi[nu]->bg) {
-
 			oneStrwrite(et);
-
 		}
 
 		else {
-
 			oneStrwrite(e);
-
 		}
 
-
-
 		if (fi[nu]->fg) {
-
 			oneStrwrite(fg);
-
 			if (fi[nu]->fg->rgb)
-
 				oneStrplusDoubleq(rgb, fi[nu]->fg->rgb);
 
 			if (fi[nu]->fg->theme)
-
 				oneStrplusDoubleq(theme, fi[nu]->fg->theme);
 
 			if (fi[nu]->fg->tint)
-
 				oneStrplusDoubleq(tint, fi[nu]->fg->tint);
 
 			oneStrwrite(et);
-
 		}
 
 		if (fi[nu]->bg) {
-
 			oneStrwrite(bg);
-
 			if (fi[nu]->bg->indexed)
-
 				oneStrplusDoubleq(ind, fi[nu]->bg->indexed);
-
 			oneStrwrite(et);
-
 		}
-
-
 
 		if (fi[nu]->fg || fi[nu]->bg) {
-
 			oneStrwrite(epat);
-
 		}
-
-
-
 		oneStrwrite(etag);
 
 		nu++;
 	}
+	std::cout << "write fill count : " << nu << " , " << fillCount << std::endl;
 
 	oneStrwrite((UINT8*)endfil);
 }
-
-
 
 inline void StyleWrite::borderwrite()
 {
@@ -750,37 +704,6 @@ inline void StyleWrite::borderwrite()
 			oneStrwrite(et);
 		}
 
-		if (bor[co]->bottom) {
-			oneStrwrite(b);
-			if (bor[co]->bottom->style) {
-				oneStrplusDoubleq(sty, bor[co]->bottom->style);
-				oneStrwrite(e);// >タグ
-			}
-			if(bor[co]->bottom->Auto || bor[co]->bottom->index|| bor[co]->bottom->rgb|| bor[co]->bottom->theme|| bor[co]->bottom->tint)
-				oneStrwrite(colo);
-
-			if (bor[co]->bottom->Auto)
-				oneStrplusDoubleq(au, bor[co]->bottom->Auto);
-
-			if (bor[co]->bottom->index) 
-				oneStrplusDoubleq(ind, bor[co]->bottom->index);
-
-			if (bor[co]->bottom->rgb)
-				oneStrplusDoubleq(rg, bor[co]->bottom->rgb);
-
-			if (bor[co]->bottom->theme)
-				oneStrplusDoubleq(them, bor[co]->bottom->theme);
-
-			if (bor[co]->bottom->tint)
-				oneStrplusDoubleq(tin, bor[co]->bottom->tint);
-
-			oneStrwrite(et);
-			oneStrwrite(eb);
-		}else {
-			oneStrwrite(b);
-			oneStrwrite(et);
-		}
-
 		if (bor[co]->top) {
 			oneStrwrite(t);
 
@@ -811,6 +734,38 @@ inline void StyleWrite::borderwrite()
 			oneStrwrite(eto);
 		}else {
 			oneStrwrite(t);
+			oneStrwrite(et);
+		}
+
+		if (bor[co]->bottom) {
+			oneStrwrite(b);
+			if (bor[co]->bottom->style) {
+				oneStrplusDoubleq(sty, bor[co]->bottom->style);
+				oneStrwrite(e);// >タグ
+			}
+			if (bor[co]->bottom->Auto || bor[co]->bottom->index || bor[co]->bottom->rgb || bor[co]->bottom->theme || bor[co]->bottom->tint)
+				oneStrwrite(colo);
+
+			if (bor[co]->bottom->Auto)
+				oneStrplusDoubleq(au, bor[co]->bottom->Auto);
+
+			if (bor[co]->bottom->index)
+				oneStrplusDoubleq(ind, bor[co]->bottom->index);
+
+			if (bor[co]->bottom->rgb)
+				oneStrplusDoubleq(rg, bor[co]->bottom->rgb);
+
+			if (bor[co]->bottom->theme)
+				oneStrplusDoubleq(them, bor[co]->bottom->theme);
+
+			if (bor[co]->bottom->tint)
+				oneStrplusDoubleq(tin, bor[co]->bottom->tint);
+
+			oneStrwrite(et);
+			oneStrwrite(eb);
+		}
+		else {
+			oneStrwrite(b);
 			oneStrwrite(et);
 		}
 
@@ -848,6 +803,7 @@ inline void StyleWrite::borderwrite()
 		oneStrwrite(etag);
 		co++;
 	}
+	std::cout << "write border count : " << co << " , " << borderCount << std::endl;
 	oneStrwrite((UINT8*)enbor);
 }
 
@@ -870,6 +826,7 @@ inline void StyleWrite::cellstyleXfs()
 	UINT8 align[] = "<alignment";
 	UINT8 ver[] = " vertical=\"";
 	UINT8 afo[] = " applyFont=\"";
+	UINT8 wtx[] = " wrapText=\"";
 
 	stylexf** csx = cellstyleXfsRoot;
 	size_t co = 0;
@@ -913,17 +870,23 @@ inline void StyleWrite::cellstyleXfs()
 		if (csx[co]->applyProtection)
 			oneStrplusDoubleq(ap, csx[co]->applyProtection);
 
-		if (csx[co]->Avertical) {
+		if (csx[co]->wraptext || csx[co]->Avertical) {
+			// <alignment  >タグの中
 			oneStrwrite(e);// >タグ
 			oneStrwrite(align);
-			oneStrplusDoubleq(ver, csx[co]->Avertical);
+			if (csx[co]->Avertical)
+				oneStrplusDoubleq(ver, csx[co]->Avertical);
+			if(csx[co]->wraptext)
+				oneStrplusDoubleq(wtx, csx[co]->wraptext);
 			oneStrwrite(et);
 			oneStrwrite(etag);// alignment　あり　</xf>追加
-		}else {
+		}
+		else {
 			oneStrwrite(et);// alignment なし />タグ 
 		}
 		co++;
 	}
+	std::cout << "write cellstylexfs count : " << co << " , " << cellstyleXfsNum << std::endl;
 	oneStrwrite((UINT8*)EncsXfs);
 }
 
@@ -958,6 +921,7 @@ inline void StyleWrite::numFmidwrite()
 
 		co++;
 	}
+	std::cout << "write numfmts count : " << co << " , " << numFmtsNum << std::endl;
 	oneStrwrite((UINT8*)Efmts);
 }
 

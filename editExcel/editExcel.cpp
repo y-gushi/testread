@@ -318,6 +318,8 @@ int main(char* fname[], int i) {
         std::cout << "applyProtection : " << cxs->applyProtection << std::endl;
     if (cxs->Avertical)
         std::cout << "vertical : " << cxs->Avertical << std::endl;
+    if (cxs->wraptext)
+        std::cout << "wraptext : " << cxs->wraptext << std::endl;
     if (cxs->applyFill)
         std::cout << "applyFill : " << cxs->applyFill << std::endl;
     if (cxs->applyFont)
@@ -390,7 +392,7 @@ int main(char* fname[], int i) {
 
     DeflateDecode* Hdeco;
 
-    char sheet[] = "worksheets/sheet";
+    char sheet[] = "worksheets/sheet300";
 
     bool t = false;
     Ctags* mh;//発注到着　cell データ読み込み

@@ -477,7 +477,7 @@ inline UINT8* checkstyle::configstyle(UINT8* num)
 	cx->horizontal = nullptr;
 	cx->applyFill = nullptr;
 	cx->applyFont = nullptr;
-
+	cx->quotePrefix = nullptr;
 
 	//--------------- 共通設定　フォント -------------------//
 
@@ -544,6 +544,7 @@ inline UINT8* checkstyle::configstyle(UINT8* num)
 
 	csx->applyFont = nullptr;	
 	csx->applyFill = nullptr;
+	csx->wraptext = nullptr;
 
 	//-------------  共通設定　cellstyleXfs numFmts収集 ----------------//
 	//numFmid 検索
