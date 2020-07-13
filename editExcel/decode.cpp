@@ -714,25 +714,26 @@ int DeflateDecode::haffmanread() {
     }
 
     UINT32 msize = (UINT32)HLIT + 257;
-
-    hufftable = (UINT32*)malloc(sizeof(UINT32) * msize);
+    
+    hufftable = (UINT32*)calloc(msize + 2, sizeof(UINT32));
     if (!hufftable)
         return 0;
-    hufval = (UINT32*)malloc(sizeof(UINT32) * msize);
+    hufval = (UINT32*)calloc(msize + 2, sizeof(UINT32));
     if (!hufval)
         return 0;
-    lenh = (UINT32*)malloc(sizeof(UINT32) * msize);
+    lenh = (UINT32*)calloc(msize + 2, sizeof(UINT32));
     if (!lenh)
         return 0;
 
     UINT32 customsize = signSize - msize;
-    lentable = (UINT32*)malloc(sizeof(UINT32) * customsize);
+
+    lentable = (UINT32*)calloc(customsize + 2, sizeof(UINT32));
     if (!lentable)
         return 0;
-    lenval = (UINT32*)malloc(sizeof(UINT32) * customsize);
+    lenval = (UINT32*)calloc(customsize + 2, sizeof(UINT32));
     if (!lenval)
         return 0;
-    lenlen = (UINT32*)malloc(sizeof(UINT32) * customsize);
+    lenlen = (UINT32*)calloc(customsize + 2, sizeof(UINT32));
     if (!lenlen)
         return 0;
 

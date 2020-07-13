@@ -1,4 +1,5 @@
 ﻿#include "slidewindow.h"
+#include <iostream>
 
 slidewndow::slidewndow()
 {
@@ -20,84 +21,74 @@ slidewndow::slidewndow()
     distance_extenshonRoot = nullptr;
     milestocksize = 0;
     distancestocksize = 0;
+    freecount = 0;
 }
 
 slidewndow::~slidewndow()
 {
+}
+
+void slidewndow::milefree() {
+    //std::cout << "free : " << freecount << std::endl;
     free(milestock);
     free(distancestock);
     free(mile_extension_stock);
     free(distance_extenshon_stock);
 }
 
-UINT32 slidewndow::slidesearch(unsigned char* p, UINT32 len, UINT32 spos)
+UINT32 slidewndow::slidesearch(unsigned char* p, UINT64 len, UINT64 spos)
 {
     UINT32 fl = 0;
     UINT32 m = 0;//長さ格納
     UINT32 l = 0;//距離格納
-    UINT32 i = spos;
+    UINT64 i = spos;
     milestocksize = 0;
     distancestocksize = 0;
+    exmil = 0;
+    exdis = 0;
 
-    milestock = (UINT32*)malloc(sizeof(UINT32) * LEVEL);
-    distancestock = (UINT32*)malloc(sizeof(UINT32) * LEVEL);
-    mile_extension_stock = (UINT32*)malloc(sizeof(UINT32) * LEVEL);
-    distance_extenshon_stock = (UINT32*)malloc(sizeof(UINT32) * LEVEL);
     mileRoot = milestock;
     distanceRoot = distancestock;
     mile_extensionRoot = mile_extension_stock;
     distance_extenshonRoot = distance_extenshon_stock;
-    UINT32 exdis = 0;//確認用
-    UINT32 exmil = 0;//確認用
 
-    if (milestock) {
+    if (mileRoot) {
         while (i < len && milestocksize < LEVEL - 1) {
             if (i == 0) {
-                *milestock = p[0];
-                milestock++;
+                milestock[milestocksize] = p[0];
                 milestocksize++;
                 i++;
             }
             else {
                 fl = CurposSearch(p, i, len);
                 if (fl > 0) {//一致した文字列があった場合
-                    m = MileExSearch((fl & 0xFFFFFFFF));//長さを符号よう数値に変換
+                    m = MileExSearch(fl);//長さを符号よう数値に変換
                     l = DistanceExSearch(Distancelength);//距離を符号よう数値に変換
                     i += fl;//距離ぶんポインタ移動
-                    *milestock = m;//長さを配列に
-                    milestock++;
+                    milestock[milestocksize] = m;//長さを配列に
                     milestocksize++;
                     if (m >= 265 && m < 285) {
-                        *mile_extension_stock = mileexval;//長さ拡張ビットの値を入れる
-                        mile_extension_stock++;
+                        mile_extension_stock[exmil] = mileexval;//長さ拡張ビットの値を入れる
                         exmil++;
                     }
                     if (l >= 4) {
-                        *distance_extenshon_stock = distanceexval & 0xFFFFFFFF;//距離拡張の値を入れる
-                        distance_extenshon_stock++;
+                        distance_extenshon_stock[exdis] = distanceexval;//距離拡張の値を入れる
                         exdis++;
                     }
-                    *distancestock = l;//距離を配列に
-                    distancestock++;
+                    distancestock[distancestocksize] = l;//距離を配列に
                     distancestocksize++;
                 }
                 else {//一致した文字列がなかった場合
-                    *milestock = p[i];
-                    milestock++;//一致する文字列が無ければ文字を配列に
+                    milestock[milestocksize] = p[i];//一致する文字列が無ければ文字を配列に
                     milestocksize++;
                     i++;
                 }
             }
         }
-        *milestock = 256;//終了数値
-        milestock++;
+        milestock[milestocksize] = 256;//終了数値
         milestocksize++;
     }
-    milestock = mileRoot;
-    distancestock = distanceRoot;
-    mile_extension_stock = mile_extensionRoot;
-    distance_extenshon_stock = distance_extenshonRoot;
-
+    //std::cout << "ex len : " << exmil << std::endl;
     return i;
 }
 

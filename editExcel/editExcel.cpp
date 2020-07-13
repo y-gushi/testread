@@ -128,9 +128,7 @@ int main(char* fname[], int i) {
         decShare->dataread(hr2->LH->pos, cddata->nonsize);
     }
     shareRandD* sharray = new shareRandD(decShare->ReadV, decShare->readlen);//share 再初期化 検索用に呼び出し
-
     sharray->getSicount();//get si count
-
     sharray->ReadShare();//文字列読み込み
     delete hr2;
     delete decShare;
@@ -142,7 +140,7 @@ int main(char* fname[], int i) {
     hr2 = new HeaderRead(Zfn);
 
     hr2->endread(&Zr);//終端コードの読み込み
-
+    /*
     DeflateDecode* Sdeco = new DeflateDecode(&Zr);
 
     while (hr2->filenum < hr2->ER->centralsum) {
@@ -383,7 +381,7 @@ int main(char* fname[], int i) {
     delete sr;
 
     delete Sdeco;
-
+    */
     /*-----------------------
 
    発注到着シート読み込み
@@ -392,10 +390,11 @@ int main(char* fname[], int i) {
 
     DeflateDecode* Hdeco;
 
-    char sheet[] = "worksheets/sheet300";
+    char sheet[] = "worksheets/sheet";
+    encoding* enc = nullptr;
 
     bool t = false;
-    Ctags* mh;//発注到着　cell データ読み込み
+    //Ctags* mh;//発注到着　cell データ読み込み
     CDdataes* slideCDdata = hr2->saveCD;//ファイル名検索用
 
     hr2->readpos = hr2->ER->position;//読み込み位置初期化
@@ -412,26 +411,7 @@ int main(char* fname[], int i) {
         if (cddata) {
             std::cout << "sheet一致ファイルネーム：" << cddata->filename << std::endl;
 
-            char wrfn[500] = { 0 };
-            int i = 0;
-            int le = 0;
-            while (wridata[le] != '\0') {
-                wrfn[le] = wridata[le];
-                le++;
-            }
-            while (cddata->filename[i] != '\0') {
-                wrfn[le] = cddata->filename[i];
-                i++; le++;
-            }
-            wrfn[le] = '\0';
 
-            std::cout << "filename make：" << wrfn << std::endl;
-
-            FILE *fwr;
-            fopen_s(&fwr, wrfn, "wb");
-
-            if (!fwr)
-                return 0;
 
             hr2->localread(cddata->localheader, &Zr);//"worksheets/sheet"に一致するファイルの中身検索
 
@@ -440,20 +420,16 @@ int main(char* fname[], int i) {
 
             std::cout << "decode len : "<<cddata->nonsize << std::endl;
             
-            mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, sharray);//シートデータ読み込み
-            mh->sheetread();
-            mh->writesheetdata();
+            //mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, sharray);//シートデータ読み込み
+            //mh->sheetread();
+            //mh->writesheetdata();
 
             encoding* enc = new encoding;//圧縮
-            enc->compress(mh->wd, mh->p);//データ圧縮
+            enc->compress(Hdeco->ReadV, Hdeco->readlen);//データ圧縮
             delete enc;
-            
-            for (int h = 0; h < mh->p; h++) {
-                fwrite(&mh->wd[h], 1, 1, fwr);
-            }            
-            
+                        
             hr2->freeLH();
-            delete mh;
+            //delete mh;
             delete Hdeco;//デコードデータ　削除 
         }
         hr2->freeheader();        
@@ -467,7 +443,7 @@ int main(char* fname[], int i) {
 
     Zr.close();
 
-    fclose(f);
+    //fclose(f);
 
     //_CrtDumpMemoryLeaks();//メモリ リーク レポートを表示
 

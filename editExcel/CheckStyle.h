@@ -490,7 +490,7 @@ inline UINT8* checkstyle::configstyle(UINT8* num)
 	const char* sharefonts[] = { "11", "2","128","minor" };//sz family charset scheme
 	int nalen = 0;
 	fo->sz = (UINT8*)malloc(3);
-	memcpy(fo->sz, (UINT8*)sharefonts[0], 3);
+	strcpy_s((char*)fo->sz, 3,sharefonts[0]);
 
 	fo->name = (UINT8*)malloc(strlen(fon) + 1);
 	while (fon[nalen] != '\0') {

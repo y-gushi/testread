@@ -848,7 +848,7 @@ inputtxt* HeaderRead::slipInputText(char* ins,inputtxt* it) {
 
     int j = 0;
     i = 0;
-    int stockpos = 0;
+    size_t stockpos = 0;
     while (j < intxtCount) {
         while (ins[i] != ',' && ins[i] != '\0')
             i++;

@@ -395,6 +395,7 @@ void Ctags::writecells() {
         while (RN[writep] != '\0') {// r
             wd[p] = RN[writep]; p++; writep++;
         }writep = 0;
+        free(RN);
         if (Ro->spanS) {//Ç»Ç¢èÍçáÇ†ÇÈ
             while (rspa[writep] != '\0') {//span
                 wd[p] = rspa[writep]; p++; writep++;
@@ -456,6 +457,7 @@ void Ctags::writecells() {
 
         UINT8* rne = NA.InttoChar(Ro->r, &Place);//îzóÒÇ…ïœçX
         writec(Ro->cells, rne);
+        free(rne);
 
         while (Rend[writep] != '\0') {// ">
             wd[p] = Rend[writep]; p++; writep++;
@@ -492,6 +494,7 @@ void Ctags::writec(C* ctag, UINT8* ROW) {
         while (Col[writep] != '\0') {//r óÒ
             wd[p] = Col[writep]; p++; writep++;
         }writep = 0;
+        free(Col);
         while (ROW[writep] != '\0') {//r çs
             wd[p] = ROW[writep]; p++; writep++;
         }writep = 0;

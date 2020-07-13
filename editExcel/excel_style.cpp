@@ -66,6 +66,7 @@ styleread::~styleread()
 		free(cellstyleXfsRoot[j]->fontId);
 		free(cellstyleXfsRoot[j]->numFmtId);
 		free(cellstyleXfsRoot[j]->borderId);
+		free(cellstyleXfsRoot[j]->wraptext);
 		free(cellstyleXfsRoot[j]);
 	}
 
@@ -183,11 +184,12 @@ styleread::~styleread()
 		free(cellXfsRoot[j]->horizontal);
 		free(cellXfsRoot[j]->numFmtId);
 		free(cellXfsRoot[j]->xfId);
+		free(cellXfsRoot[j]->quotePrefix);
 		free(cellXfsRoot[j]);
 	}
 
 	free(styleSheetStr);
-
+	free(tablestyle);
 	free(extLstStr);
 
 	/*

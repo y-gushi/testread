@@ -18,6 +18,7 @@ Ctags::~Ctags(){
     free(dm->sR);
     free(dm->eC);
     free(dm->eR);
+    free(dm);
 
     free(MC);
     free(margeCellCount);

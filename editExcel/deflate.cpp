@@ -46,7 +46,7 @@ tnode* deflate::addtree(tnode* p, UINT32 n, UINT32* c)
 tab* deflate::addtab(tab* t, UINT32 n, UINT32* c)
 {
     if (!t) {
-        t = ttalloc();
+        t = (struct tab*)malloc(sizeof(struct tab));;
         t->num = n;
         t->wei = 1;
         (*c)++;
@@ -128,7 +128,7 @@ tab* deflate::huhu(tnode* n[], tnode* m[], UINT32 t, UINT32 l, UINT32 lim, UINT3
                     if (cou > 1)
                         s = s->next;
                     else if (cou == 1)
-                        b = s;
+                        b = s;//b 最初の参照
                 }
                 flag = true;//一致した値があった場合Tに
                 stock = n[j]->chi;//stock更新
@@ -269,7 +269,7 @@ void deflate::treeplas(tnode* p)
 
 tnode* deflate::tabcopy(tnode* p, tab s)
 {
-    p = talloc();
+    p = (struct tnode*)malloc(sizeof(struct tnode));
     p->num = s.num;
     p->wei = s.wei;
     p->chi = 0;
@@ -297,7 +297,7 @@ void deflate::quicksort(tnode* v[], int left, int right)
 void deflate::shellsort(tnode* v[], int n)
 {
     int gap, i, j;
-    struct tnode* h = talloc();
+    struct tnode* h = nullptr;
 
     for (gap = n / 2; gap > 0; gap /= 2)
         for (i = gap; i < n; i++)
@@ -311,7 +311,7 @@ void deflate::shellsort(tnode* v[], int n)
 void deflate::shellsortFugo(tnode* v[], int n)
 {
     int gap, i, j;
-    struct tnode* h = talloc();
+    struct tnode* h = nullptr;
 
     for (gap = n / 2; gap > 0; gap /= 2)
         for (i = gap; i < n; i++)
@@ -333,7 +333,7 @@ void deflate::swap(tnode* v[], int i, int j)
 
 tnode* deflate::treemake(tnode* r, tnode* l)
 {
-    struct tnode* p = talloc();
+    struct tnode* p = (tnode*)malloc(sizeof(tnode));
 
     p->num = -1;
     p->wei = r->wei + l->wei;
@@ -414,7 +414,7 @@ tnode* deflate::limitedtreemake(tnode* r, tnode* l, UINT32 lim)
         return r;
     }
 
-    struct tnode* p = talloc();
+    struct tnode* p = (struct tnode*)malloc(sizeof(struct tnode));
     p->num = -1;
     p->wei = r->wei + l->wei;
     p->chi = r->chi > l->chi ? r->chi : l->chi;
