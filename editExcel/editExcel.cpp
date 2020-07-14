@@ -140,7 +140,7 @@ int main(char* fname[], int i) {
     hr2 = new HeaderRead(Zfn);
 
     hr2->endread(&Zr);//終端コードの読み込み
-    /*
+    
     DeflateDecode* Sdeco = new DeflateDecode(&Zr);
 
     while (hr2->filenum < hr2->ER->centralsum) {
@@ -381,7 +381,7 @@ int main(char* fname[], int i) {
     delete sr;
 
     delete Sdeco;
-    */
+    
     /*-----------------------
 
    発注到着シート読み込み
@@ -394,7 +394,7 @@ int main(char* fname[], int i) {
     encoding* enc = nullptr;
 
     bool t = false;
-    //Ctags* mh;//発注到着　cell データ読み込み
+    Ctags* mh;//発注到着　cell データ読み込み
     CDdataes* slideCDdata = hr2->saveCD;//ファイル名検索用
 
     hr2->readpos = hr2->ER->position;//読み込み位置初期化
@@ -420,9 +420,9 @@ int main(char* fname[], int i) {
 
             std::cout << "decode len : "<<cddata->nonsize << std::endl;
             
-            //mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, sharray);//シートデータ読み込み
-            //mh->sheetread();
-            //mh->writesheetdata();
+            mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, sharray);//シートデータ読み込み
+            mh->sheetread();
+            mh->writesheetdata();
 
             encoding* enc = new encoding;//圧縮
             enc->compress(Hdeco->ReadV, Hdeco->readlen);//データ圧縮
@@ -443,7 +443,7 @@ int main(char* fname[], int i) {
 
     Zr.close();
 
-    //fclose(f);
+    fclose(f);
 
     //_CrtDumpMemoryLeaks();//メモリ リーク レポートを表示
 

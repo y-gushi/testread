@@ -254,10 +254,10 @@ int encoding::compress(unsigned char* data, UINT64 dataleng) {
     //ブロック符号数　解凍時　hex 1fff　dec 8191
     //同じパターン検索
     size_t comsize = 0;
-    if (dataleng > 5000)
+    if (dataleng > 2000)
         comsize = size_t((dataleng/10)*7);
     else
-        comsize = 6000;
+        comsize = 2000;
     encoderv = (unsigned char*)malloc(comsize);
     if (!encoderv)
         return 0;
