@@ -149,6 +149,7 @@
     <ClCompile Include="excel_style.cpp" />
     <ClCompile Include="headerread.cpp" />
     <ClCompile Include="headerwrite.cpp" />
+    <ClCompile Include="PLread.cpp" />
     <ClCompile Include="RowColumn.cpp" />
     <ClCompile Include="SearchItemNUm.cpp" />
     <ClCompile Include="shareRandW.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="excel_style.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="nodeandtab.h" />
+    <ClInclude Include="PLread.h" />
     <ClInclude Include="RowColumn.h" />
     <ClInclude Include="SearchItemNUm.h" />
     <ClInclude Include="shareRandW.h" />
