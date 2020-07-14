@@ -30,9 +30,15 @@ public:
     UINT32 maxmilestock;//ストックの最長
     UINT64 stocknum;//ストック数
 
+    UINT32 freecount;//確認用
+    UINT32 exdis = 0;//確認用
+    UINT32 exmil = 0;//確認用
+
     slidewndow();
     ~slidewndow();
-    UINT32 slidesearch(unsigned char* p, UINT32 len, UINT32 spos);
+    void milefree();
+    UINT32 slidesearch(unsigned char* p, UINT64 len, UINT64 spos);
+    //UINT32 slidesearch(unsigned char* p, UINT32 len, UINT32 spos);
     UINT32 CurposSearch(unsigned char* ps, UINT32 pp, UINT32 l);
     UINT32 MileBitnumSearch(UINT32 l);//長さ拡張ビット数の参照
     UINT32 DistanceBitnumSearch(UINT32 l);//距離拡張ビット数の参照
