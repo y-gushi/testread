@@ -60,7 +60,7 @@ public:
     void fixedcompress(slidewndow* s);
     void headerwrite(unsigned char HLIT, unsigned char HDIST, unsigned char BI, unsigned char BT);
     void makeSign(slidewndow* s, deflate* defl);
-    void compress(unsigned char* data, UINT64 dataleng);
+    int compress(unsigned char* data, UINT64 dataleng);
     void write(FILE* f);
 
 
