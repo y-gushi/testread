@@ -234,7 +234,6 @@ void encoding::fixedcompress(slidewndow* s) {
             }
         }
         free(d);
-        d = nullptr;
     }
 
     while (bits.bitpos > 0) {//残りビットを書き込む
@@ -251,18 +250,37 @@ void encoding::fixedcompress(slidewndow* s) {
     encoderv = rvp;
 }
 //データ圧縮開始
-void encoding::compress(unsigned char* data, UINT64 dataleng) {
+int encoding::compress(unsigned char* data, UINT64 dataleng) {
     //ブロック符号数　解凍時　hex 1fff　dec 8191
     //同じパターン検索
-
-    size_t comsize = size_t(dataleng);
-    //comsize = comsize * 7;
-
+    size_t comsize = 0;
+    if (dataleng > 2000)
+        comsize = size_t((dataleng / 10) * 7);
+    else
+        comsize = 2000;
     encoderv = (unsigned char*)malloc(comsize);
-    rvp = encoderv;
-    UINT32 readpos = 0;
-    bool kotei = false;
+    if (!encoderv)
+        return 0;
 
+    slidewndow* s = new slidewndow();
+    deflate* def = new deflate();
+
+    size_t msiz = sizeof(UINT32) * (LEVEL + 2);
+    s->milestock = (UINT32*)calloc(LEVEL + 2, sizeof(UINT32));
+    //memset(milestock, 0, sizeof(UINT32) * LEVEL);
+    s->distancestock = (UINT32*)calloc(LEVEL + 2, sizeof(UINT32));
+    //memset(distancestock, 0, sizeof(UINT32) * LEVEL);
+    s->mile_extension_stock = (UINT32*)calloc(LEVEL + 2, sizeof(UINT32));
+    //memset(mile_extension_stock, 0, sizeof(UINT32) * LEVEL);
+    s->distance_extenshon_stock = (UINT32*)calloc(LEVEL + 2, sizeof(UINT32));
+
+    if (!s->distance_extenshon_stock && !s->mile_extension_stock && !s->distancestock && s->milestock)
+        return 0;
+
+    rvp = encoderv;
+    UINT64 readpos = 0;
+    bool kotei = false;
+    UINT32 frcou = 0;
     //long long int length=dataleng;//データ長 unsigned 不可
     //分割
     while ((dataleng & 0xFFFFFFFF) > readpos) {
@@ -271,9 +289,12 @@ void encoding::compress(unsigned char* data, UINT64 dataleng) {
         lb = 0;
         k = 0;
         mc = 0;
-        slidewndow* s = new slidewndow;
-        deflate* def = new deflate;
-        readpos = s->slidesearch(data, dataleng & 0xFFFFFFFF, readpos);
+        //s = new slidewndow();
+        //def = new deflate();
+
+        readpos = s->slidesearch(data, dataleng, readpos);
+        if (readpos == 0)
+            return 0;//error
         //std::cout << "s size : " << s->milestocksize << std::endl;
         if (s->milestocksize < 1000) {//固定ハフマン圧縮
             fixedcompress(s);
@@ -385,21 +406,21 @@ void encoding::compress(unsigned char* data, UINT64 dataleng) {
                     }
                 }
             }
-            
+
             //huh解放
             def->nodefree(huh[0]);
-            free(huh);
+            //free(huh);
             free(huhc);
 
             //so開放
             def->nodefree(so[0]);
-            free(so);
+            //free(so);
             free(sso);
 
             //lev開放
             def->nodefree(lev[0]);
-            free(lev);
-            free(llev);            
+            //free(lev);
+            free(llev);
 
             //tab解放
             def->tabfree(hh);
@@ -407,25 +428,25 @@ void encoding::compress(unsigned char* data, UINT64 dataleng) {
             //free(hhh);
             def->tabfree(fir);
             def->tabfree(lir);
-            
+
             //長さ制限用メモリ開放
             //for (int j = def->limitnum; j < limit_stock_max; j++)
-            free(def->limithuffstock);
+            //free(def->limithuffstock);
+
+            huh = nullptr;
+            huhc = nullptr;
+            so = nullptr;
+            sso = nullptr;
+            lev = nullptr;
+            llev = nullptr;
+            def->limithuffstock = nullptr;
+
         }
-        /*
-        huh = nullptr;
-        huhc = nullptr;
-        so = nullptr;
-        sso = nullptr;
-        lev = nullptr;
-        llev = nullptr;
-        def->limithuffstock = nullptr;
-        hh = nullptr; hhc = nullptr; hhh = nullptr;
-        delete s;
-        delete def;
-        */
     }
-    std::cout << "compress len : " << datalen << std::endl;
+    s->milefree();
+    delete s;
+    delete def;
+    std::cout << "len : " << frcou << std::endl;
 
     if (!kotei) {
         bits.BigendIn(0, 1);//1bit 最終ブロックかどうか
@@ -472,7 +493,7 @@ void encoding::compress(unsigned char* data, UINT64 dataleng) {
         }
         encoderv = rvp;
     }
-
+    return 1;
 }
 
 void encoding::makeSign(slidewndow* s, deflate* defl) {
@@ -484,9 +505,9 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
     maxlen = 0;
     lmaxlen = 0;
     fir = nullptr;
-    tab* firRoot = fir;
+    tab* firRoot = nullptr;
     lir = nullptr;
-    tab* lirRoot = lir;
+    tab* lirRoot = nullptr;
     hh = nullptr;
     hhc = nullptr;
 
@@ -499,13 +520,14 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
     for (UINT32 i = 0; i < s->distancestocksize; i++) {
         lir = defl->addtab(lir, s->distanceRoot[i], &lc);
     }
-
+    firRoot = fir;
+    lirRoot = lir;
     tcc = tc;
     lcc = lc;
 
     UINT32 tnodesize = sizeof(tnode);
-    UINT32 ssize = tnodesize * tc;
-    UINT32 lsize = tnodesize * lc;
+    UINT32 ssize = tnodesize * (tc + 1);
+    UINT32 lsize = tnodesize * (lc + 1);
 
     so = (tnode**)malloc(ssize);//ポインタ テーブル so[tc]　定義に変数使えない
     sso = (tnode**)malloc(ssize);//ポインタ テーブル　各数値参照用　sso[tc]　定義に変数使えない
@@ -515,7 +537,6 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
 
     //リテラル・長さテーブルをツリー配列に入れる
     for (UINT32 i = 0; i < tc; i++) {
-        //so[i] = sso[i] = defl->talloc();
         sso[i] = so[i] = defl->tabcopy(so[i], *fir);
         fir = fir->next;
     }
@@ -531,7 +552,7 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
     while (tc > 1) {
         defl->quicksort(so, 0, tc - 1);
         so[tc - 2] = defl->treemake(so[tc - 1], so[tc - 2]);
-        so[tc - 1] = nullptr;
+        //so[tc - 1] = nullptr;
         tc--;
     }
     //std::cout << "距離符号　lc : " <<lc<< std::endl;
@@ -539,7 +560,7 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
     while (lc > 1) {
         defl->quicksort(lev, 0, lc - 1);
         lev[lc - 2] = defl->treemake(lev[lc - 1], lev[lc - 2]);
-        lev[lc - 1] = nullptr;
+        //lev[lc - 1] = nullptr;
         lc--;
     }
     defl->treeprint(so[0], &maxlen);//最大符号長を得る
@@ -565,7 +586,7 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
 
     hccc = hcc;
 
-    UINT32 hsize = tnodesize * hcc;
+    UINT32 hsize = tnodesize * (hcc + 1);
     huh = (tnode**)malloc(hsize);//ポインタ 符号の符号テーブル　huh[hcc]
     huhc = (tnode**)malloc(hsize);//ポインタ 符号の符号テーブル　各数値参照用　huhc[hccc]
 
@@ -574,7 +595,6 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
 
     if (huh && huhc) {
         for (UINT32 i = 0; i < hcc; i++) {//テーブルをツリー配列に入れる
-            //huh[i] = huhc[i] = defl->talloc();
             huhc[i] = huh[i] = defl->tabcopy(huh[i], *hhc);
             hhc = hhc->next;
         }
@@ -583,20 +603,17 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
         //std::cout << "符号符号　hhc : " << hcc << std::endl;
         limstocksize = tnodesize * limit_stock_max;
         defl->limithuffstock = (tnode**)malloc(limstocksize);
-        //for (int li = 0; li < limit_stock_max; li++)
-        //    defl->limithuffstock[li] = nullptr;
 
         while (hcc > 1) {//符号の符号の長さを決める
             defl->quicksort(huh, 0, hcc - 1);
             huh[hcc - 2] = defl->limitedtreemake(huh[hcc - 1], huh[hcc - 2], huff_of_huff_limit);
-            huh[hcc - 1] = nullptr;
+            //huh[hcc - 1] = nullptr;
             hcc--;
         }
 
         //長さ制限処理
         if (defl->limitnum > 1) {
             while (defl->limitnum > 1) {//2個の場合ソートエラーになる
-                std::cout << "ツリーストック１個以上" << std::endl;
                 defl->quicksort(defl->limithuffstock, 0, defl->limitnum - 1);
                 defl->limithuffstock[defl->limitnum - 2] = defl->treemake(defl->limithuffstock[defl->limitnum - 1], defl->limithuffstock[defl->limitnum - 2]);
                 defl->limitnum--;
@@ -606,7 +623,7 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
         else if (defl->limitnum == 1) {
             huh[0] = defl->treemake(defl->limithuffstock[0], huh[0]);
         }
-        
+
         defl->treeprint(huh[0], &maxhh);//最大符号長を得る
         defl->shellsort(huhc, hccc);//数値でツリー数値を昇順に並べる
         defl->makehuff(huhc, maxhh + 1, hccc);//ハフマン符号を割り振る
