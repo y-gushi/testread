@@ -1,6 +1,6 @@
 #include "RowColumn.h"
 
-Ctags::Ctags(UINT8* decorddata, UINT64 datalen, shareRandD* shdata){
+Ctags::Ctags(UINT8* decorddata, UINT64 datalen, shareRandD* shdata) {
     data = decorddata;
     dlen = datalen;
     sh = shdata;
@@ -8,7 +8,7 @@ Ctags::Ctags(UINT8* decorddata, UINT64 datalen, shareRandD* shdata){
     MC = nullptr;
 }
 
-Ctags::~Ctags(){
+Ctags::~Ctags() {
     free(headXML);
     free(dimtopane);
 
@@ -18,7 +18,6 @@ Ctags::~Ctags(){
     free(dm->sR);
     free(dm->eC);
     free(dm->eR);
-    free(dm);
 
     free(MC);
     free(margeCellCount);
@@ -143,7 +142,7 @@ UINT8* Ctags::getvalue() {
 
     Sv = (UINT8*)malloc(ssize);
 
-    for (UINT32 i = 0; i < len; i++){
+    for (UINT32 i = 0; i < len; i++) {
         Sv[i] = data[p]; p++;
     }
 
@@ -340,7 +339,7 @@ void Ctags::getCtag() {
             col = (UINT8*)malloc(csize);
             row = (UINT8*)malloc(rsize);
 
-            for (UINT32 i = 0; i < collen; i++){
+            for (UINT32 i = 0; i < collen; i++) {
                 col[i] = data[p]; p++;
             }
 
@@ -737,7 +736,7 @@ void Ctags::getselection() {
     const char* ecp = "pane=\"";//6
     const char* active = "activeCell=\"";//12
     const char* sqref = "sqref=\"";//7
-    
+
     UINT8* pa = nullptr;
     UINT8* ac = nullptr;
     UINT8* sq = nullptr;
@@ -802,7 +801,7 @@ void Ctags::getselection() {
         //if (pa || ac || sq)
     }
     sct = SLTaddtable(sct, pa, ac, sq);//構造体へコピー
-    
+
 }
 
 void Ctags::GetPane() {
@@ -1092,7 +1091,7 @@ void Ctags::getfinalstr() {
                 fstr[i] = data[p];
                 p++; i++;
             }
-            len = (UINT32)i -(UINT32)len;//string num
+            len = (UINT32)i - (UINT32)len;//string num
             size_t ml = (size_t)len + 1;
             MC = (UINT8*)malloc(ml);
 
@@ -1161,20 +1160,20 @@ void Ctags::getMargeCell() {
             while (marcell[mlen] != ':')
                 mlen++;
 
-            stacell = (UINT8*)malloc(mlen+1);
+            stacell = (UINT8*)malloc(mlen + 1);
             for (size_t i = 0; i < mlen; i++)
                 stacell[i] = marcell[i];
             stacell[mlen] = '\0';
 
             mlen++;//:skip
 
-            size_t  elen= mlen;//後半スタート位置
+            size_t  elen = mlen;//後半スタート位置
             while (marcell[mlen] != '\0')
                 mlen++;
 
             size_t memsiz = mlen - elen;
-            
-            endcell = (UINT8*)malloc(memsiz+1);
+
+            endcell = (UINT8*)malloc(memsiz + 1);
             elen = 0;
             for (size_t i = 0; i < memsiz; i++) {
                 endcell[i] = marcell[elen];
@@ -1184,7 +1183,7 @@ void Ctags::getMargeCell() {
 
             free(marcell);
         }
-    }    
+    }
     margeCellRoot = addmargecell(margeCellRoot, stacell, endcell);
 }
 

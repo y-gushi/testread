@@ -76,8 +76,8 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
                 UINT8* n2 = nullptr;
                 UINT8* n3 = nullptr;
                 F* n4 = nullptr;
-                UINT8* sv = (UINT8*)malloc(4);
-                strcpy_s((char*)sv, 4, (const char*)nomals);
+                UINT8* sv = (UINT8*)malloc(5);
+                strcpy_s((char*)sv, 5, (const char*)nomals);
                 ro->cells = addCtable(ro->cells, n1, sv, n2, incolnum, n3, n4);
             }
             NA.ColumnIncliment(&incolnum);
@@ -98,7 +98,7 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
         UINT32 ncn = NA.RowArraytoNum(ncols->max, j);//最終max文字列 数字に変換
         if (cn > ncn) {//cols max 小さい
             UINT8 wi[] = "9"; UINT8 styl[] = "1";
-            size_t colmemsiz = strlen((const char*)col)+1;
+            size_t colmemsiz = strlen((const char*)col) + 1;
             UINT8* mincol = (UINT8*)malloc(colmemsiz);
             strcpy_s((char*)mincol, colmemsiz, (const char*)col);
 
@@ -395,7 +395,6 @@ void Ctags::writecells() {
         while (RN[writep] != '\0') {// r
             wd[p] = RN[writep]; p++; writep++;
         }writep = 0;
-        free(RN);
         if (Ro->spanS) {//ない場合ある
             while (rspa[writep] != '\0') {//span
                 wd[p] = rspa[writep]; p++; writep++;
@@ -457,7 +456,6 @@ void Ctags::writecells() {
 
         UINT8* rne = NA.InttoChar(Ro->r, &Place);//配列に変更
         writec(Ro->cells, rne);
-        free(rne);
 
         while (Rend[writep] != '\0') {// ">
             wd[p] = Rend[writep]; p++; writep++;
@@ -494,7 +492,6 @@ void Ctags::writec(C* ctag, UINT8* ROW) {
         while (Col[writep] != '\0') {//r 列
             wd[p] = Col[writep]; p++; writep++;
         }writep = 0;
-        free(Col);
         while (ROW[writep] != '\0') {//r 行
             wd[p] = ROW[writep]; p++; writep++;
         }writep = 0;
