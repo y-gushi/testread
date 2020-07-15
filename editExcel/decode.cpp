@@ -474,7 +474,7 @@ void DeflateDecode::CustomRead()
     lenroot = nullptr;
     root = nullptr;
     signs = nullptr;
-    //freetree(hufhuf);//ê√ìI
+    freetree(hufhuf);//ê√ìI
     free(lentable);
     free(lenlen);
     free(lenval);
