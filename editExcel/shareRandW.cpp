@@ -447,6 +447,7 @@ void shareRandD::Sitablefree(Si* s) {
 
     while (s) {
         q = s->next;  /* ŽŸ‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ð•Û‘¶ */
+        free(s->Ts);
         free(s);
         s = q;
     }

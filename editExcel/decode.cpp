@@ -470,6 +470,7 @@ void DeflateDecode::CustomRead()
     }
     freetree(lenroot);
     freetree(root);
+    freetree(hufhuf);
     free(signs);
     lenroot = nullptr;
     root = nullptr;

@@ -540,6 +540,7 @@ void Ctags::Getrow() {
         if (strncmp((char const*)rs, Rr, 3) == 0) {
             r = getvalue();
             rownum = NA.RowArraytoNum(r, stocklen);
+            free(r);
         }
 
         if (strncmp((char const*)ht, Rht, 4) == 0 && strncmp((char const*)cusf, RcustomHeight, 14) != 0)
