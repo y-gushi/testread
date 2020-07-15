@@ -113,69 +113,40 @@ struct borders
 
 //cellStyleXfs 内容
 struct stylexf
-
 {
-
 	UINT8* numFmtId;
-
 	UINT8* fontId;
-
 	UINT8* fillId;
-
 	UINT8* borderId;
-
 	UINT8* applyNumberFormat;
-
 	UINT8* applyFont;
-
 	UINT8* applyFill;
-
 	UINT8* applyBorder;
-
 	UINT8* applyAlignment;
-
 	UINT8* applyProtection;
-
 	UINT8* Avertical;
+	UINT8* wraptext;
 
 	stylexf* next;
-
 };
 
-
-
 struct cellxfs
-
 {
-
 	UINT8* numFmtId;
-
 	UINT8* fontId;
-
 	UINT8* fillId;
-
 	UINT8* borderId;
-
 	UINT8* xfId;
-
 	UINT8* applyNumberFormat;
-
 	UINT8* applyFont;
-
 	UINT8* applyFill;
-
 	UINT8* applyBorder;
-
 	UINT8* applyAlignment;
-
 	UINT8* Avertical;
-
 	UINT8* AwrapText;
-
 	UINT8* horizontal;
-
+	UINT8* quotePrefix;
 	cellxfs* next;
-
 };
 
 
@@ -265,105 +236,52 @@ struct numFMts
 
 
 class styleread {
-
 public:
-
 	const char* fonts;
-
 	const char* Efonts;
-
 	const char* fills;
-
 	const char* endfil;
-
 	const char* border;
-
 	const char* enbor;
-
 	const char* cellstXfs;
-
 	const char* EncsXfs;
-
 	const char* color;
-
 	const char* Ecolor;
-
 	const char* Xfs;
-
 	const char* Exfs;
-
 	const char* CellStyl;
-
 	const char* Ecellsty;
-
 	const char* dxf;
-
 	const char* Edxf;
-
 	const char* Endstyle;
-
 	const char* Fmts;
-
 	const char* Efmts;
 
-
-
 	//書き込み用
-
 	const char* countstr = " count=\"";
-
-
-
 	ArrayNumber strchange;
-
-
-
 	const char* styleSheet;
-
 	const char* extLst = "<extLst>";
-
-
-
 	int fontcou;
-
-
-
 	size_t strl = 0;//文字列長さ用
-
-
-
 	UINT64 readp;
-
-
-
 	Fonts** fontRoot;
-
 	Fills** fillroot;
-
 	borders** BorderRoot;
-
 	stylexf** cellstyleXfsRoot;
-
 	cellxfs** cellXfsRoot;
-
 	numFMts** numFmtsRoot;
-
 	cellstyle** cellStyleRoot;
-
 	Dxf** dxfRoot;
-
 	colors* colorsRoot;
 
 	UINT8* fontCount;
 	UINT32 fontNum = 0;//フォントカウント数値変換
 	UINT32 frcount = 0;
-
 	UINT8* kFonts;
-
 	UINT8* fillCount;
 	UINT32 fillNum = 0;//フィルカウント数値変換
 	UINT32 ficount = 0;
-
 	UINT8* borderCount;
 	UINT32 borderNum = 0;//ボーダーカウント数値変換
 	UINT32 bocount = 0;
@@ -388,14 +306,14 @@ public:
 	UINT32 dxfsNm = 0;
 	UINT32 dxcount = 0;
 
+	UINT8* tablestyle;
 	UINT8* styleSheetStr;
-
 	UINT8* extLstStr;
 
-
+	size_t testfontcou = 0;
+	size_t testfillcou = 0;
 
 	styleread();
-
 	~styleread();
 
 
