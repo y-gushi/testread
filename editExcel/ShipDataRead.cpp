@@ -6,7 +6,7 @@ shipinfo::shipinfo(Row* cel) {
 }
 
 shipinfo::~shipinfo() {
-    //freeItem(its);
+    freeItem(its);
     //free(shipday);//元で解放 no malloc
     //free(day);
     //セル引数　元で解放 cel no malloc
@@ -81,8 +81,6 @@ UINT8* shipinfo::outuntil(UINT8 c, UINT8* st)
     }
     else {
         int t = 0; int h = 0;
-
-
         if (p) {
             while (h < j) {
                 if (!isspace(st[h])) {
@@ -92,9 +90,6 @@ UINT8* shipinfo::outuntil(UINT8 c, UINT8* st)
                 h++;
             }
             p[t] = '\0';
-        }
-        else {
-            p = nullptr;
         }
     }
 
@@ -206,6 +201,7 @@ void shipinfo::GetItems() {
     int j = 0;
     while (sr) {
         while (sr->cells) {
+            
 
             if (sr->cells->col == ITcells[0] && ITcells[0] != 0) {//numbe
                 j = 0;
@@ -220,102 +216,111 @@ void shipinfo::GetItems() {
                     Colo = outuntil('(', sr->cells->si);
                 }
                 else if (sr->cells->val) {
-                    Colo = sr->cells->val;
+                    Colo = sistrcopy(sr->cells->val);
                 }
             }
             if (sr->cells->col == ITcells[2] && itemnumFlag && ITcells[2] != 0) {
                 j = 0;
                 if (sr->cells->si) {
-                    nine = sr->cells->si;
+                    nine = sistrcopy(sr->cells->si);
                 }
                 else if (sr->cells->val) {
-                    nine = sr->cells->val;
+                    nine = sistrcopy(sr->cells->val);
                 }
             }
             if (sr->cells->col == ITcells[3] && itemnumFlag && ITcells[3] != 0) {
                 j = 0;
                 if (sr->cells->si) {
-                    ten = sr->cells->si;
+                    ten = sistrcopy(sr->cells->si);
                 }
                 else if (sr->cells->val) {
-                    ten = sr->cells->val;
+                    ten = sistrcopy(sr->cells->val);
                 }
             }
             if (sr->cells->col == ITcells[4] && itemnumFlag && ITcells[4] != 0) {
                 j = 0;
                 if (sr->cells->si) {
-                    ele = sr->cells->si;
+                    ele = sistrcopy(sr->cells->si);
                 }
                 else if (sr->cells->val) {
-                    ele = sr->cells->val;
+                    ele = sistrcopy(sr->cells->val);
                 }
             }
             if (sr->cells->col == ITcells[5] && itemnumFlag && ITcells[5] != 0) {
                 j = 0;
                 if (sr->cells->si) {
-                    twe = sr->cells->si;
+                    twe = sistrcopy(sr->cells->si);
                 }
                 else if (sr->cells->val) {
-                    twe = sr->cells->val;
+                    twe = sistrcopy(sr->cells->val);
                 }
             }
             if (sr->cells->col == ITcells[6] && itemnumFlag && ITcells[6] != 0) {
                 j = 0;
                 if (sr->cells->si) {
-                    thr = sr->cells->si;
+                    thr = sistrcopy(sr->cells->si);
                 }
                 else if (sr->cells->val) {
-                    thr = sr->cells->val;
+                    thr = sistrcopy(sr->cells->val);
                 }
             }
             if (sr->cells->col == ITcells[7] && itemnumFlag && ITcells[7] != 0) {
                 j = 0;
                 if (sr->cells->si) {
-                    four = sr->cells->si;
+                    four = sistrcopy(sr->cells->si);
                 }
                 else if (sr->cells->val) {
-                    four = sr->cells->val;
+                    four = sistrcopy(sr->cells->val);
                 }
             }
             if (sr->cells->col == ITcells[8] && itemnumFlag && ITcells[8] != 0) {
                 j = 0;
-                if (sr->cells->si) {
-                    fif = sr->cells->si;
-                }
-                else if (sr->cells->val) {
-                    fif = sr->cells->val;
-                }
+                if (sr->cells->si)
+                    fif = sistrcopy(sr->cells->si);
+                else if (sr->cells->val)
+                    fif = sistrcopy(sr->cells->val);
             }
             if (sr->cells->col == ITcells[9] && itemnumFlag && ITcells[9] != 0) {
                 j = 0;
-                if (sr->cells->si) {
-                    six = sr->cells->si;
-                }
-                else if (sr->cells->val) {
-                    six = sr->cells->val;
-                }
+                if (sr->cells->si)
+                    six = sistrcopy(sr->cells->si);
+                else if (sr->cells->val)
+                    six = sistrcopy(sr->cells->val);
             }
             if (sr->cells->col == ITcells[10] && itemnumFlag && ITcells[10] != 0) {
                 j = 0;
-                if (sr->cells->si) {
-                    f = sr->cells->si;
-                }
-                else if (sr->cells->val) {
-                    f = sr->cells->val;;
-                }
-
-                itemnumFlag = false;
-
-                its = additem(its, INt, Colo, nine, ten, ele, twe, thr, four, fif, six, f);
-
-
-                INt = nullptr; Colo = nullptr; nine = nullptr; ten = nullptr;; ele = nullptr;
-                twe = nullptr; thr = nullptr; four = nullptr; fif = nullptr; six = nullptr; f = nullptr;
+                if (sr->cells->si)
+                    f = sistrcopy(sr->cells->si);
+                else if (sr->cells->val)
+                    f = sistrcopy(sr->cells->val);                
             }
             sr->cells = sr->cells->next;
         }
+        itemnumFlag = false;
+        if (INt && Colo && nine && ten && ele && twe && thr && four && fif && six && f) {
+            its = additem(its, INt, Colo, nine, ten, ele, twe, thr, four, fif, six, f);
+        }
+        else {
+            free(INt); free(Colo); free(nine); free(ten); free(ele); free(twe);
+            free(thr); free(four); free(fif); free(six); free(f);
+            INt = nullptr; Colo = nullptr; nine = nullptr; ten = nullptr;; ele = nullptr;
+            twe = nullptr; thr = nullptr; four = nullptr; fif = nullptr; six = nullptr; f = nullptr;
+        }
         sr = sr->next;
     }
+}
+
+UINT8* shipinfo::sistrcopy(UINT8* s) {
+    size_t ssiz = strlen((char*)s);
+    UINT8* sistr = nullptr;
+
+    if (ssiz > 0) {
+        ssiz += 1;
+        sistr = (UINT8*)malloc(ssiz);
+        strcpy_s((char*)sistr, ssiz, (char*)s);
+    }
+
+    return sistr;
 }
 
 UINT8* shipinfo::StrInit() {
@@ -328,6 +333,17 @@ void shipinfo::freeItem(Items* t) {
     struct Items* q;
     while (t != NULL) {
         q = t->next;  /* 次へのポインタを保存 */
+        free(t->col);
+        free(t->itn);
+        free(t->s100);
+        free(t->s110);
+        free(t->s120);
+        free(t->s130);
+        free(t->s140);
+        free(t->s150);
+        free(t->s160);
+        free(t->s90);
+        free(t->sF);
         free(t);
         t = q;
     }

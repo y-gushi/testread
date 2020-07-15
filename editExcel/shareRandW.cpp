@@ -402,20 +402,20 @@ void shareRandD::ReadShare() {
                             i++;//文字数カウント
                         }
 
-                        UINT32 msize = i + 1;
-                        UINT8* sistr = (UINT8*)malloc(msize);//tagの値
-                        if (sistr) {
-                            for (UINT32 j = 0; j < i; j++) {
-                                sistr[j] = sd[dp];//si 文字取得
-                                dp++;
+                        UINT8* sistr = nullptr;
+                        if (i > 0) {
+                            UINT32 msize = i + 1;
+                            sistr = new UINT8[msize];//tagの値
+                            if (sistr) {
+                                for (UINT32 j = 0; j < i; j++) {
+                                    sistr[j] = sd[dp];//si 文字取得
+                                    dp++;
+                                }
+                                sistr[i] = '\0';
+                                //std::cout << "get si str" << sistr << std::endl;
+                                sis[mycount] = addSitable(sis[mycount], sistr);
+                                Tcount++;//t配列数
                             }
-                            sistr[i] = '\0';
-                            //std::cout << "get si str" << sistr << std::endl;
-                            sis[mycount] = addSitable(sis[mycount], sistr);
-
-                            Tcount++;//t配列数
-                        }
-                        else {
                         }
                     }
                 }
