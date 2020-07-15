@@ -41,8 +41,8 @@ Items* PLRead::packingread(char* fn)
 		fnlen++;
 	fnlen++;
 	erroritem->col = (UINT8*)malloc(fnlen);
-	strcpy((char*)erroritem->itn, ef);
-	strcpy((char*)erroritem->col, fn);
+	strcpy_s((char*)erroritem->itn, 16, ef);
+	strcpy_s((char*)erroritem->col, fnlen, fn);
 	erroritem->s100 = nullptr;
 	erroritem->s110 = nullptr;
 	erroritem->s120 = nullptr;
