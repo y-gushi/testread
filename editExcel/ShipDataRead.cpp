@@ -200,6 +200,7 @@ void shipinfo::GetItems() {
     std::cout << "item cell column : " << ITEMrow << std::endl;
     int j = 0;
     while (sr) {
+        j = 0;
         while (sr->cells) {
             
 
@@ -211,16 +212,15 @@ void shipinfo::GetItems() {
                 }
             }
             if (sr->cells->col == ITcells[1] && itemnumFlag && ITcells[1] != 0) {//color
-                j = 0;
                 if (sr->cells->si) {
                     Colo = outuntil('(', sr->cells->si);
+                    std::cout << "slip ( : " << Colo << std::endl;
                 }
                 else if (sr->cells->val) {
                     Colo = sistrcopy(sr->cells->val);
                 }
             }
             if (sr->cells->col == ITcells[2] && itemnumFlag && ITcells[2] != 0) {
-                j = 0;
                 if (sr->cells->si) {
                     nine = sistrcopy(sr->cells->si);
                 }
@@ -229,7 +229,6 @@ void shipinfo::GetItems() {
                 }
             }
             if (sr->cells->col == ITcells[3] && itemnumFlag && ITcells[3] != 0) {
-                j = 0;
                 if (sr->cells->si) {
                     ten = sistrcopy(sr->cells->si);
                 }
@@ -238,7 +237,6 @@ void shipinfo::GetItems() {
                 }
             }
             if (sr->cells->col == ITcells[4] && itemnumFlag && ITcells[4] != 0) {
-                j = 0;
                 if (sr->cells->si) {
                     ele = sistrcopy(sr->cells->si);
                 }
@@ -247,7 +245,6 @@ void shipinfo::GetItems() {
                 }
             }
             if (sr->cells->col == ITcells[5] && itemnumFlag && ITcells[5] != 0) {
-                j = 0;
                 if (sr->cells->si) {
                     twe = sistrcopy(sr->cells->si);
                 }
@@ -256,7 +253,6 @@ void shipinfo::GetItems() {
                 }
             }
             if (sr->cells->col == ITcells[6] && itemnumFlag && ITcells[6] != 0) {
-                j = 0;
                 if (sr->cells->si) {
                     thr = sistrcopy(sr->cells->si);
                 }
@@ -265,7 +261,6 @@ void shipinfo::GetItems() {
                 }
             }
             if (sr->cells->col == ITcells[7] && itemnumFlag && ITcells[7] != 0) {
-                j = 0;
                 if (sr->cells->si) {
                     four = sistrcopy(sr->cells->si);
                 }
@@ -274,21 +269,18 @@ void shipinfo::GetItems() {
                 }
             }
             if (sr->cells->col == ITcells[8] && itemnumFlag && ITcells[8] != 0) {
-                j = 0;
                 if (sr->cells->si)
                     fif = sistrcopy(sr->cells->si);
                 else if (sr->cells->val)
                     fif = sistrcopy(sr->cells->val);
             }
             if (sr->cells->col == ITcells[9] && itemnumFlag && ITcells[9] != 0) {
-                j = 0;
                 if (sr->cells->si)
                     six = sistrcopy(sr->cells->si);
                 else if (sr->cells->val)
                     six = sistrcopy(sr->cells->val);
             }
             if (sr->cells->col == ITcells[10] && itemnumFlag && ITcells[10] != 0) {
-                j = 0;
                 if (sr->cells->si)
                     f = sistrcopy(sr->cells->si);
                 else if (sr->cells->val)

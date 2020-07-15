@@ -405,7 +405,7 @@ void shareRandD::ReadShare() {
                         UINT8* sistr = nullptr;
                         if (i > 0) {
                             UINT32 msize = i + 1;
-                            sistr = new UINT8[msize];//tag‚Ì’l
+                            sistr = (UINT8*)malloc(msize);//tag‚Ì’l
                             if (sistr) {
                                 for (UINT32 j = 0; j < i; j++) {
                                     sistr[j] = sd[dp];//si •¶ŽšŽæ“¾
