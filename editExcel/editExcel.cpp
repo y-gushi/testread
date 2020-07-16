@@ -19,11 +19,12 @@
 #include <locale.h>
 #include "CheckStyle.h"
 
-/*
-#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
-*/
+
+#define _DEBUG
+#define _CRTDBG_MAP_ALLOC
+
 
 #define BUFSIZE  256
 
@@ -166,12 +167,14 @@ int main(char* fname[], int i) {
         if (cddata) {
             break;
         }
-        //hr->freeheader();
+        hr->freeheader();
     }
     if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
         hr->localread(cddata->localheader, &PLR);//sharesstringsの読み込み
         decShare->dataread(hr->LH->pos, cddata->nonsize);
     }
+    hr->freeLH();
+    hr->freeheader();
 
     shareRandD* sharray = new shareRandD(decShare->ReadV, decShare->readlen);//share string read to array
     sharray->getSicount();//get si count
@@ -188,12 +191,14 @@ int main(char* fname[], int i) {
         if (cddata) {
             break;
         }
-        //hr->freeheader();
+        hr->freeheader();
     }
     if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
         hr->localread(cddata->localheader, &PLR);//sharesstringsの読み込み
         decsheet->dataread(hr->LH->pos, cddata->nonsize);
     }
+    hr->freeLH();
+    hr->freeheader();
 
     Ctags* ms = new Ctags(decsheet->ReadV, decsheet->readlen, sharray);
 
@@ -206,10 +211,10 @@ int main(char* fname[], int i) {
 
     PLR.close();
     delete sharray;
-
-    /*-----------------------
-       shareシート読み込み
-     -----------------------*/
+    
+    //-----------------------//
+    //  shareシート読み込み
+    //-----------------------//
     std::ifstream Zr(Zfn, std::ios::in | std::ios::binary);
     if (!Zr)
         return 0;
@@ -248,9 +253,10 @@ int main(char* fname[], int i) {
     free(sharedata);//書き込みデータ解放
     delete hr2;
     delete decShare;
-    /*-----------------------
-   スタイルシート読み込み
-   -----------------------*/
+
+   //-----------------------
+   //スタイルシート読み込み
+   //-----------------------//
 
     HeaderRead *hHinfo = new HeaderRead(Zfn);
     hHinfo->endread(&Zr);//終端コードの読み込み
@@ -301,11 +307,11 @@ int main(char* fname[], int i) {
     delete sr;
     delete Sdeco;
 
-    /*-----------------------
+    //-----------------------
 
-   発注到着シート読み込み
+   //発注到着シート読み込み
 
-   -----------------------*/
+   //-----------------------//
 
     DeflateDecode* Hdeco=nullptr;
 
@@ -368,7 +374,8 @@ int main(char* fname[], int i) {
     delete ms;
 
     Zr.close();
-    //_CrtDumpMemoryLeaks();//メモリ リーク レポートを表示
+    
+    _CrtDumpMemoryLeaks();//メモリ リーク レポートを表示
 
     return 0;
 }

@@ -18,7 +18,6 @@ public:
     int daylen = 0;
 
     Row* cells;
-    MargeaSearch searchtag;
 
     Items* its = nullptr;
 
@@ -30,6 +29,5 @@ public:
     bool searchitemCell();
     void GetItems();
     UINT8* sistrcopy(UINT8* s);
-    UINT8* StrInit();
-    void freeItem(Items* t);
+    void freeits();
 };
