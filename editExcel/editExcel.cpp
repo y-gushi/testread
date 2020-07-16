@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 
-#define _DEBUG
 #define _CRTDBG_MAP_ALLOC
 
 
@@ -346,8 +345,8 @@ int main(char* fname[], int i) {
             mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, hattyushare);//シートデータ読み込み
             mh->sheetread();
                         
-            sI = new searchItemNum(sg->its, mh);
-            t = sI->searchitemNumber(hattyushare->uniqstr, hattyushare->inputsinum[3], hattyushare->inputsinum[2], hattyushare->inputsinum[1], hattyushare->inputsinum[0], (char*)styleset, teststyl);
+            sI = new searchItemNum(mh);
+            t = sI->searchitemNumber(hattyushare->uniqstr, hattyushare->inputsinum[3], hattyushare->inputsinum[2], hattyushare->inputsinum[1], hattyushare->inputsinum[0], (char*)styleset, teststyl,sg->its);
             if (t) {
                 mh->writesheetdata();//シートデータ書き込み
                 crc CRC;

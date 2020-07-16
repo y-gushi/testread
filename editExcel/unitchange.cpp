@@ -79,7 +79,7 @@ UINT8* unitC::changeKana(UINT8* s) {
 		}
 		after[j] = '\0';
 	}
-
+	free(s);
 	return after;
 }
 
@@ -253,12 +253,13 @@ UINT8* unitC::slipNum(UINT8* s)
 		else {
 			return s;
 		}
-		free(Num);
-		free(more);
+		
 		
 		after[j] = '\0';
 	}
-	
+	free(Num);
+	free(more);
+
 	return after;
 }
 

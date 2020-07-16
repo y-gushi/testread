@@ -327,17 +327,7 @@ void shipinfo::freeits() {
     struct Items* q;
     while (its) {
         q = its->next;  /* ŽŸ‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ð•Û‘¶ */
-        free(its->col);
-        free(its->itn);
-        free(its->s100);
-        free(its->s110);
-        free(its->s120);
-        free(its->s130);
-        free(its->s140);
-        free(its->s150);
-        free(its->s160);
-        free(its->s90);
-        free(its->sF);
+        
         free(its);
         its = q;
     }

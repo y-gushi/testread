@@ -20,8 +20,8 @@ Ctags::~Ctags(){
     free(dm->eR);
     free(dm);
 
-    free(MC);
-    free(margeCellCount);
+    //free(MC);
+    //free(margeCellCount);
 
     free(fstr);
     free(wd);
@@ -184,11 +184,13 @@ UINT8* Ctags::getSi(UINT8* v, UINT32 vl) {
 
         while (RootSi) {//tタグ足し合わせる
             Tstrlen = 0;//初期化
-            while (RootSi->Ts[Tstrlen] != '\0') {
-                Vsi[sistrlen] = RootSi->Ts[Tstrlen];
-                sistrlen++; Tstrlen++;
+            if (RootSi->Ts) {
+                while (RootSi->Ts[Tstrlen] != '\0') {
+                    Vsi[sistrlen] = RootSi->Ts[Tstrlen];
+                    sistrlen++; Tstrlen++;
+                }
+                RootSi = RootSi->next;
             }
-            RootSi = RootSi->next;
         }
         Vsi[sistrlen] = '\0';
     }
@@ -1063,7 +1065,7 @@ void Ctags::getfinalstr() {
     UINT8 sm[20] = { 0 };
     UINT8 Sm[17] = { 0 };
 
-    UINT32 fstrsize = s + 1;
+    UINT32 fstrsize = s + 2;
     fstr = (UINT8*)malloc(fstrsize);
     int result = 0;
     int mresult = 0;
@@ -1078,7 +1080,7 @@ void Ctags::getfinalstr() {
         }
         Sm[16 - 1] = sm[19 - 1] = fstr[i] = data[p];
         p++; i++;
-
+        /*
         result = strncmp((const char*)sm, margeinfo, 19);
         mresult = strncmp((const char*)Sm, marge, 16);
 
@@ -1101,6 +1103,7 @@ void Ctags::getfinalstr() {
                 MC[j] = data[p - len + j];
             MC[len] = '\0';
         }
+        */
     }
     fstr[s] = '\0';
 

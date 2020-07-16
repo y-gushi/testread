@@ -37,6 +37,8 @@ public:
     char** inputsinum;//入力文字列Siナンバー
     int subcount;//入力文字列カウント
 
+    int freecount=0;//確認用
+
     shareRandD(UINT8* d, UINT64 l);
     ~shareRandD();
     void getSicount();

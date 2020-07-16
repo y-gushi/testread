@@ -9,6 +9,11 @@ shareRandD::shareRandD(UINT8* d, UINT64 l) {
 }
 
 shareRandD::~shareRandD() {
+    
+    for (int i = 0; i < mycount; i++) {//シェアー文字列　メモリ解放
+        if (sis[i])
+            Sitablefree(sis[i]);
+    }
 
     //free(writedata);
     //free(inputsinum);
@@ -146,7 +151,7 @@ UINT8* shareRandD::writeshare(UINT8* instr, int instrlen, char* subone, char* su
     UINT8 siend[] = "</si>";
     UINT8 siendslide[6] = { 0 };
 
-    UINT32 datalen = UINT32(sdlen) + 2000;//データ長
+    UINT32 datalen = UINT32(sdlen) + 3000;//データ長
 
     UINT8* writedata = (unsigned char*)malloc(datalen);
 
@@ -365,10 +370,10 @@ void shareRandD::ReadShare() {
 
     UINT32 newsize = sizeof(Si);
     newsize = newsize * (siunique + 1);
-    sis = (Si**)malloc(sizeof(Si) * siunique);//si数分の配列確保
+    sis = (Si**)malloc(sizeof(Si) * newsize);//si数分の配列確保
 
     //テスト用
-    searchItemNum change = searchItemNum(nullptr, nullptr);
+    //searchItemNum change = searchItemNum(nullptr);
 
     if (sip && sis && Esip) {
         while (dp < sdlen) {
@@ -411,7 +416,7 @@ void shareRandD::ReadShare() {
                                 dp++;
                             }
                             sistr[i] = '\0';
-                            //std::cout << "get si str" << sistr << std::endl;
+                            //std::cout << "get si str" << sistr<<" mycount "<<mycount << std::endl;
                             sis[mycount] = addSitable(sis[mycount], sistr);
                             Tcount++;//t配列数
                         }
@@ -443,10 +448,15 @@ Si* shareRandD::addSitable(Si* s, UINT8* str) {
 void shareRandD::Sitablefree(Si* s) {
     Si* q = nullptr;
 
+    freecount++;
+    if(s)
+        std::cout << "free count : " << freecount <<" "<<s->Ts<< std::endl;
+
     while (s) {
         q = s->next;  /* 次へのポインタを保存 */
         free(s->Ts);
         free(s);
         s = q;
     }
+    
 }

@@ -139,7 +139,7 @@ ColorAnSize* MargeaSearch::splitColor(UINT8* cstr) {
         splitspace[j] = '\0';
 
         //std::cout << "color : " << split << std::endl;
-        searchItemNum itemchange(nullptr,nullptr);
+        searchItemNum itemchange(nullptr);
 
         spl = 0;
 

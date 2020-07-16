@@ -1,7 +1,7 @@
 #include "SearchItemNUm.h"
 
-searchItemNum::searchItemNum(Items* itemstruct, Ctags* cs) {
-    its = itemstruct;
+searchItemNum::searchItemNum(Ctags* cs) {
+    //its = itemstruct;
     Cels = cs;
     Mstr = MargeaSearch();
     rootMat = nullptr;
@@ -11,11 +11,11 @@ searchItemNum::~searchItemNum() {
 
 }
 
-bool searchItemNum::searchitemNumber(UINT8* uniq, char* one, char* two, char* three, char* four, char* style, char* celstyle) {
+bool searchItemNum::searchitemNumber(UINT8* uniq, char* one, char* two, char* three, char* four, char* style, char* celstyle, Items* itemstruct) {
     Row* sr = nullptr;
     sr = Cels->rows;
     Items* Item = nullptr;
-    Item = its;
+    Item = itemstruct;
     UINT8* nr = nullptr;//文字入力行　配列
     int result = 0;
     const char* SaT[] = { "s", "1127" };
@@ -23,7 +23,7 @@ bool searchItemNum::searchitemNumber(UINT8* uniq, char* one, char* two, char* th
     UINT8* matchItem = nullptr;
 
     while (sr) {//品番検索
-        Item = its;
+        Item = itemstruct;
         while (Item) {
             if (sr->cells) {
                 if (sr->cells->si) {
@@ -150,7 +150,7 @@ bool searchItemNum::searchitemNumber(UINT8* uniq, char* one, char* two, char* th
         }
     }
 
-    Item = its;
+    Item = itemstruct;
 
     while (Item) {//item 品番一致　全カラー
         sr = Cels->rows;

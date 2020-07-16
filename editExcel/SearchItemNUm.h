@@ -16,10 +16,10 @@ class searchItemNum {
 
 public:
 
-    searchItemNum(struct Items* itemstruct, Ctags* cs);
+    searchItemNum(Ctags* cs);
     ~searchItemNum();
 
-    bool searchitemNumber(UINT8* uniq, char* one, char* two, char* three, char* four, char* style, char* celstyle);
+    bool searchitemNumber(UINT8* uniq, char* one, char* two, char* three, char* four, char* style, char* celstyle, Items* itemstruct);
 
     void colorsearch(Row* inrow, Items* IT, UINT8* itn, char* s);
 
@@ -30,7 +30,7 @@ public:
     UINT32 startR = 0;
     UINT32 inputColum = 0;
     UINT8* incolumn = nullptr;
-    struct Items* its;
+    //struct Items* its;
     Ctags* Cels;
     ArrayNumber changenum;
     MargeaSearch Mstr;
