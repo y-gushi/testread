@@ -163,37 +163,34 @@ UINT8* Ctags::getSi(UINT8* v, UINT32 vl) {
     UINT32 sistrlen = 0;//si タグ内 <t>たぐの足した文字長さ  //UINT8* Vsi = sh->sis[Vnum]->Ts;//share str into struct　<t>何個かある
     UINT32 Tstrlen = 0;
 
-    Si* RootSi = sh->sis[Vnum];//親　参照
+    Tvalue* RootSi = sh->sis[Vnum]->Ts;//親　参照
 
     while (RootSi) {//t タグ　総合文字列　長さ確認
         Tstrlen = 0;
-        while (RootSi->Ts[Tstrlen] != '\0') {
+        while (RootSi->Tv[Tstrlen] != '\0') {
             sistrlen++; Tstrlen++;
         }
-
         RootSi = RootSi->next;
     }
+    RootSi = sh->sis[Vnum]->Ts;
 
-    RootSi = sh->sis[Vnum];
+    size_t slen = sistrlen + 1;
+    Vsi = (UINT8*)malloc(slen);//メモリ確保
 
-    if (sistrlen > 0) {
-        sistrlen = sistrlen + 1;
-        Vsi = (UINT8*)malloc(sistrlen);//メモリ確保
+    sistrlen = 0;
 
-        sistrlen = 0;
-
-        while (RootSi) {//tタグ足し合わせる
-            Tstrlen = 0;//初期化
-            if (RootSi->Ts) {
-                while (RootSi->Ts[Tstrlen] != '\0') {
-                    Vsi[sistrlen] = RootSi->Ts[Tstrlen];
-                    sistrlen++; Tstrlen++;
-                }
-                RootSi = RootSi->next;
+    while (RootSi) {//tタグ足し合わせる
+        Tstrlen = 0;//初期化
+        if (RootSi->Tv) {
+            while (RootSi->Tv[Tstrlen] != '\0') {
+                Vsi[sistrlen] = RootSi->Tv[Tstrlen];
+                sistrlen++; Tstrlen++;
             }
+            RootSi = RootSi->next;
         }
-        Vsi[sistrlen] = '\0';
     }
+    Vsi[sistrlen] = '\0';
+
     return Vsi;
 }
 
@@ -599,14 +596,10 @@ void Ctags::GetDiment() {
     int spos = 0;
 
     dm = (demention*)malloc(sizeof(demention));
-    dm->sC = (UINT8*)malloc(5);//demention start 列
-    memset(dm->sC, 0, 5);
-    dm->sR = (UINT8*)malloc(5);//demention start 行
-    memset(dm->sR, 0, 5);
-    dm->eC = (UINT8*)malloc(5);//demention end 列
-    memset(dm->eC, 0, 5);
-    dm->eR = (UINT8*)malloc(5);//demention end 行
-    memset(dm->eR, 0, 5);
+    dm->sC = (UINT8*)calloc(5,sizeof(UINT8));//demention start 列
+    dm->sR = (UINT8*)calloc(5, sizeof(UINT8));//demention start 行
+    dm->eC = (UINT8*)calloc(5, sizeof(UINT8));//demention end 列
+    dm->eR = (UINT8*)calloc(5, sizeof(UINT8));//demention end 行
 
     // <dimension ref="A1:EJ128"/>を検索
 

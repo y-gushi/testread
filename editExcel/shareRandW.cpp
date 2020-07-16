@@ -11,10 +11,14 @@ shareRandD::shareRandD(UINT8* d, UINT64 l) {
 shareRandD::~shareRandD() {
     
     for (int i = 0; i < mycount; i++) {//シェアー文字列　メモリ解放
-        if (sis[i])
-            Sitablefree(sis[i]);
+        if (sis[i]) {
+            sirPhfree(sis[i]->rp);
+            siTvfree(sis[i]->Ts);
+            free(sis[i]->phonetic);
+            free(sis[i]);
+        }
     }
-
+    
     //free(writedata);
     //free(inputsinum);
 }
@@ -325,14 +329,14 @@ void shareRandD::searchSi(char* ipto, char* iptt, char* iptth, char* iptf) {
 
     for (int i = 0; i < siunique; i++) {
         if (strlen(ipto) > 0) {
-            result = strcmp((const char*)sis[i]->Ts, (const char*)ipto);
+            result = strcmp((const char*)sis[i]->Ts->Tv, (const char*)ipto);
             if (result == 0) {//文字列一致
                 num = st.InttoChar(i, &place);//intをcharへ
                 inputsinum[0] = (char*)num;
             }
         }
         if (strlen(iptt) > 0) {
-            result = strcmp((const char*)sis[i]->Ts, (const char*)iptt);
+            result = strcmp((const char*)sis[i]->Ts->Tv, (const char*)iptt);
             if (result == 0) {//文字列一致
                 num = st.InttoChar(i, &place);//intをcharへ
                 inputsinum[1] = (char*)num;
@@ -340,7 +344,7 @@ void shareRandD::searchSi(char* ipto, char* iptt, char* iptth, char* iptf) {
         }
 
         if (strlen(iptth) > 0) {
-            result = strcmp((const char*)sis[i]->Ts, (const char*)iptth);
+            result = strcmp((const char*)sis[i]->Ts->Tv, (const char*)iptth);
             if (result == 0) {//文字列一致
                 num = st.InttoChar(i, &place);//intをcharへ
                 inputsinum[2] = (char*)num;
@@ -348,7 +352,7 @@ void shareRandD::searchSi(char* ipto, char* iptt, char* iptth, char* iptf) {
         }
 
         if (strlen(iptf) > 0) {
-            result = strcmp((const char*)sis[i]->Ts, (const char*)iptf);
+            result = strcmp((const char*)sis[i]->Ts->Tv, (const char*)iptf);
             if (result == 0) {//文字列一致
                 num = st.InttoChar(i, &place);//intをcharへ
                 inputsinum[3] = (char*)num;
@@ -360,7 +364,7 @@ void shareRandD::searchSi(char* ipto, char* iptt, char* iptth, char* iptf) {
 //share を配列へ入れる
 void shareRandD::ReadShare() {
     /*そのセルの書式設定は、RichTextRun (<r>) 要素と RunProperties (<rPr>) 要素を使用して、テキストと一緒に共有文字列項目内に保存されます。 異なる方法で書式設定されているテキスト間の空白文字を保持するために、text (<t>) 要素の space 属性は preserve に設定されています。 */
-    UINT64 dp = 0;//intから変更
+    //intから変更
     UINT32 i = 0;
     int result = 0;
     int ENDresult = 1;
@@ -374,6 +378,7 @@ void shareRandD::ReadShare() {
 
     //テスト用
     //searchItemNum change = searchItemNum(nullptr);
+    dp = 0;
 
     if (sip && sis && Esip) {
         while (dp < sdlen) {
@@ -385,78 +390,307 @@ void shareRandD::ReadShare() {
 
             result = strncmp((char const*)sip, tagSi, 4);
             if (result == 0) {//siタグ一致後<t>検索
-                Si* Sts = nullptr;
-                ENDresult = 1;
-                sis[mycount] = nullptr;
-                while (ENDresult != 0) {// </si>まで
-                    for (int j = 0; j < 5 - 1; j++) {
-                        Esip[j] = Esip[j + 1];
-                        if (j < 3 - 1)
-                            sip[j] = sip[j + 1];
-                    }
-                    Esip[5 - 1] = sip[3 - 1] = sd[dp];//最後に付け加える
-                    Esip[5] = sip[3] = '\0'; dp++;//位置移動
-
-                    ENDresult = strncmp((char const*)Esip, esi, 5);
-                    result = strncmp((char const*)sip, tagT, 2);
-                    if (result == 0) {// <t が一致したら<までsi get
-                        i = 0;
-                        while (sd[dp - 1] != '>')//t tag 閉じまで
-                            dp++;
-                        while (sd[dp + i] != '<') {
-                            i++;//文字数カウント
-                        }
-
-                        UINT8* sistr = nullptr;
-                        UINT32 msize = i + 1;
-                        sistr = (UINT8*)malloc(msize);//tagの値
-                        if (sistr) {
-                            for (UINT32 j = 0; j < i; j++) {
-                                sistr[j] = sd[dp];//si 文字取得
-                                dp++;
-                            }
-                            sistr[i] = '\0';
-                            //std::cout << "get si str" << sistr<<" mycount "<<mycount << std::endl;
-                            sis[mycount] = addSitable(sis[mycount], sistr);
-                            Tcount++;//t配列数
-                        }
-                    }
-                }
-                Tcount = 0;
+                sis[mycount] = getSi();
                 mycount++;//si配列数
             }
         }
     }
-    else {
-    }
 }
 
-Si* shareRandD::addSitable(Si* s, UINT8* str) {
-    if (!s) {
-        s = (Si*)malloc(sizeof(Si));
-        if (s) {
-            s->Ts = str;
-            s->next = nullptr;
+Si* shareRandD::getSi() {
+    const char phoneti[] = "<phoneticPr";//11文字
+    const char rph[] = "<rPh";//4文字
+    const char closerph[] = "</rPh>";//6文字
+    const char ttag[] = "<t";//2文字
+    const char tclose[] = "</t>";//4文字
+    const char closetag[] = "/>";//2文字
+    const char siend[] = "</si>";//5文字
+
+    char Pho[12] = { 0 };
+    char Rph[5] = { 0 };
+    char CRph[7] = { 0 };
+    char Tta[4] = { 0 };
+    char Clo[3] = { 0 };
+    char eSi[6] = { 0 };
+
+    int result = 0;
+    int eres = 1;
+
+    UINT8* pho = nullptr;
+    Tvalue* Tv = nullptr;
+    rPhtag* rPh = nullptr;
+    Si* siv = nullptr;
+
+    while (eres != 0) {
+        for (int i = 0; i < 10; i++) {
+            Pho[i] = Pho[i + 1];
+            if (i < 5)
+                CRph[i] = CRph[i + 1];
+            if (i < 4)
+                eSi[i] = eSi[i + 1];
+            if (i < 3)
+                Rph[i] = Rph[i + 1];
+            if (i < 2)
+                Tta[i] = Tta[i + 1];
+            if (i < 1)
+                Clo[i] = Clo[i + 1];
+        }
+        Pho[10] = eSi[4] = CRph[5] = Rph[3] = Tta[2] = Clo[1] = sd[dp];
+        Pho[11] = eSi[5] = CRph[6] = Rph[4] = Tta[3] = Clo[2] = '\0';
+        dp++;
+
+        eres = strncmp((const char*)eSi, siend, 5);// </si> 検索
+
+        result = strncmp((const char*)Pho, phoneti, 11);//phoneticPr 検索
+        if (result == 0)
+            pho = getphoneticPr();
+
+        result = strncmp((const char*)Rph, rph, 4);//rph 検索
+        if (result == 0)
+            rPh = getrPh(rPh);
+
+        result = strncmp((const char*)Clo, ttag, 2);//t 検索
+        if (result == 0) {
+            Tv = getTtagValue(Tv);//リスト追加
         }
     }
-    else {
-        s->next = addSitable(s->next, str);
+
+    siv = (Si*)malloc(sizeof(Si));
+    if (!Tv) {
+        std::cout << "t null" << std::endl;
     }
-    return s;
+    siv->phonetic = pho;
+    siv->rp = rPh;
+    siv->Ts = Tv;
+
+    return siv;
 }
 
-void shareRandD::Sitablefree(Si* s) {
-    Si* q = nullptr;
+rPhtag* shareRandD::getrPh(rPhtag* rpt) {
+    const char closerph[] = "</rPh>";//6文字
+    const char sb[] = "sb=\"";//4文字
+    const char eb[] = "eb=\"";//4文字
+    const char ttag[] = "<t>";//3文字
+    const char tclose[] = "</t>";//4文字
+    const char closetag[] = "/>";//2文字
+
+    char Rph[5] = { 0 };
+    char CRph[7] = { 0 };
+    char Tta[4] = { 0 };
+    char Clo[3] = { 0 };
+
+    UINT8* Sb = nullptr;
+    UINT8* Eb = nullptr;
+    UINT8* Tv = nullptr;
+
+    int result = 0;
+    int endr = 1;
+
+    while (endr != 0) {
+        for (int i = 0; i < 5; i++) {
+            CRph[i] = CRph[i + 1];
+            if (i < 3)
+                Rph[i] = Rph[i + 1];
+            if (i < 2)
+                Tta[i] = Tta[i + 1];
+            if (i < 1)
+                Clo[i] = Clo[i + 1];
+        }
+        CRph[5] = Rph[3] = Tta[2] = Clo[1] = sd[dp];
+        CRph[6] = Rph[4] = Tta[3] = Clo[2] = '\0';
+        dp++;
+
+        endr = strncmp((const char*)CRph, closerph, 6);// </rPh> 検索
+
+        result = strncmp((const char*)Rph, sb, 4);//sb 検索
+        if (result == 0)
+            Sb = getValue();
+
+        result = strncmp((const char*)Rph, eb, 4);//eb 検索
+        if (result == 0)
+            Eb = getValue();
+
+        result = strncmp((const char*)Tta, ttag, 3);//<t> 検索
+        if (result == 0)
+            Tv = getTValue();
+    }
+
+    rpt = addrPh(rpt, Sb, Eb, Tv);
+
+    return rpt;
+}
+
+Tvalue* shareRandD::addT(Tvalue* t, UINT8* v, UINT8* x) {
+    if (!t) {
+        t = (Tvalue*)malloc(sizeof(Tvalue));
+        t->Tv = v;
+        t->xm = x;
+        t->next = nullptr;
+    }
+    else
+        t->next = addT(t->next, v,x);
+    return t;
+}
+
+rPhtag* shareRandD::addrPh(rPhtag* r, UINT8* s, UINT8* e, UINT8* t) {
+    if (!r) {
+        r = (rPhtag*)malloc(sizeof(rPhtag));
+        r->sb = s;
+        r->eb = e;
+        r->t = t;
+        r->next = nullptr;
+    }
+    else
+        r->next = addrPh(r->next, s, e, t);
+
+    return r;
+}
+
+//siの中のtタグ
+Tvalue* shareRandD::getTtagValue(Tvalue* tvs) {
+    //<t xml:space="preserve"> or <t>
+    const char tclose[] = "</t>";//4文字
+    const char xmlsp[] = "xml:space=\"";//11文字
+
+    char Rph[5] = { 0 };
+    char Xms[12] = { 0 };
+
+    UINT8* Tv = nullptr;
+    UINT8* Xm = nullptr;
+
+    int res = 0;
+    size_t len = 0;
+
+    while (sd[dp] != '>') {
+        for (int i = 0; i < 10; i++)
+            Xms[i] = Xms[i + 1];
+        Xms[10] = sd[dp];
+        Xms[11] = '\0';
+        dp++;
+
+        res = strncmp((const char*)Xms, xmlsp, 11);
+        if (res == 0) {
+            Xm = getValue();
+        }
+    }
+
+    dp++;// >次から
+
+    while (sd[dp + len] != '<')
+        len++;
+
+    Tv = (UINT8*)malloc(len + 1);
+
+    for (size_t j = 0; j < len; j++) {
+        Tv[j] = sd[dp];
+        dp++;
+    }
+    Tv[len] = '\0';
+
+    tvs = addT(tvs, Tv, Xm);
+
+    return tvs;
+}
+
+// rphの中のtタグ
+UINT8* shareRandD::getTValue() {
+    //<t xml:space="preserve"> or <t>
+    const char tclose[] = "</t>";//4文字
+    char Rph[5] = { 0 };
+    UINT8* Tv = nullptr;
+
+    size_t len = 0;
+    while (sd[dp] != '>')
+        dp++;
+    dp++;// >次から
+
+    while (sd[dp + len] != '<')
+        len++;
+
+    Tv = (UINT8*)malloc(len+1);
+
+    for (size_t j = 0; j < len; j++) {
+        Tv[j] = sd[dp];
+        dp++;
+    }
+    Tv[len] = '\0';
+
+    return Tv;
+    
+}
+
+UINT8* shareRandD::getphoneticPr() {
+    //phoneticPrの取得
+
+    const char fontId[] = "fontId=\"";//8文字
+    char Fid[9] = { 0 };
+
+    UINT8* fid = nullptr;
+
+    int res = 0;
+    while (sd[dp] != '>') {
+        for (int i = 0; i < 7; i++)
+            Fid[i] = Fid[i + 1];
+        Fid[7] = sd[dp];
+        Fid[8] = '\0';
+        dp++;
+
+        res = strncmp((const char*)Fid, fontId, 8);
+        if (res == 0) {
+            fid=getValue();
+        }
+    }
+
+    return fid;
+}
+
+UINT8* shareRandD::getValue() {
+
+    size_t vallen = 0;
+    size_t taglen = size_t(dp);
+    size_t msize = 0;
+    UINT8* tagval;
+    tagval = nullptr;
+
+    while (sd[dp] != '"') {
+        if (sd[dp] != '"')//read data  && d[readp] != '/'
+            vallen++;
+        dp++;
+    }
+    //strl = vallen;
+    msize = vallen + 1;
+
+    tagval = (UINT8*)malloc(msize);
+
+    for (size_t i = 0; i < vallen; i++)
+        tagval[i] = sd[taglen + i];
+
+    tagval[vallen] = '\0';
+    return tagval;
+}
+
+void shareRandD::sirPhfree(rPhtag* s) {
+    rPhtag* q = nullptr;
 
     freecount++;
-    if(s)
-        std::cout << "free count : " << freecount <<" "<<s->Ts<< std::endl;
 
     while (s) {
         q = s->next;  /* 次へのポインタを保存 */
-        free(s->Ts);
-        free(s);
+        free(s->sb);
+        free(s->eb);
+        //free(s);        
+            //std::cout << "free count : " << freecount << " " << s->Ts << std::endl;        
+        s = q;
+    }    
+}
+
+void shareRandD::siTvfree(Tvalue* s) {
+    Tvalue* q = nullptr;
+
+    while (s) {
+        q = s->next;  /* 次へのポインタを保存 */
+        free(s->Tv); 
+        free(s->xm);
         s = q;
     }
-    
 }

@@ -173,7 +173,7 @@ int main(char* fname[], int i) {
         decShare->dataread(hr->LH->pos, cddata->nonsize);
     }
     hr->freeLH();
-    hr->freeheader();
+    //hr->freeheader();
 
     shareRandD* sharray = new shareRandD(decShare->ReadV, decShare->readlen);//share string read to array
     sharray->getSicount();//get si count
@@ -197,7 +197,7 @@ int main(char* fname[], int i) {
         decsheet->dataread(hr->LH->pos, cddata->nonsize);
     }
     hr->freeLH();
-    hr->freeheader();
+    //hr->freeheader();
 
     Ctags* ms = new Ctags(decsheet->ReadV, decsheet->readlen, sharray);
 
@@ -265,7 +265,7 @@ int main(char* fname[], int i) {
         cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, stylefn, &Zr);
         if (cddata)
             break;
-        //hr2->freeheader();
+        hHinfo->freeheader();
     }
     if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
         hHinfo->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
@@ -360,9 +360,10 @@ int main(char* fname[], int i) {
             delete mh;
             delete Hdeco;//デコードデータ　削除
             delete sI;
-            hHinfo->freeheader();
+            
             hHinfo->freeLH();
         }
+        hHinfo->freeheader();
     }
     std::cout << "end item search" << std::endl;
 
@@ -374,7 +375,7 @@ int main(char* fname[], int i) {
 
     Zr.close();
     
-    _CrtDumpMemoryLeaks();//メモリ リーク レポートを表示
+    //_CrtDumpMemoryLeaks();//メモリ リーク レポートを表示
 
     return 0;
 }

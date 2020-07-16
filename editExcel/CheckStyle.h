@@ -428,7 +428,7 @@ inline UINT8* checkstyle::searchnumFmts(numFMts* fs)
 
 	size_t leng = strlen((const char*)numFmtsRoot[count]->Id) + 1;
 	nu = (UINT8*)malloc(leng);
-	memcpy(nu, numFmtsRoot[count]->Id, leng);
+	strcpy_s((char*)nu, leng, (const char*)numFmtsRoot[count]->Id);
 
 	return nu;
 }

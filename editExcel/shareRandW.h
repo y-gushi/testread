@@ -5,9 +5,23 @@
 #include "CRC.h"
 #include "Header.h"
 
+struct rPhtag {
+    UINT8* sb;
+    UINT8* eb;
+    UINT8* t;
+    rPhtag* next;
+};
+
+struct Tvalue {
+    UINT8* Tv;
+    UINT8* xm;
+    Tvalue* next;
+};
+
 struct Si {
-    UINT8* Ts = nullptr;
-    Si* next = nullptr;
+    Tvalue* Ts;
+    rPhtag* rp;
+    UINT8* phonetic;
 };
 
 class shareRandD {
@@ -33,6 +47,7 @@ public:
     ArrayNumber st;
     crc Crc;
     UINT32 buckcrc = 0;
+    UINT64 dp = 0;//読み込み位置
 
     char** inputsinum;//入力文字列Siナンバー
     int subcount;//入力文字列カウント
@@ -48,7 +63,16 @@ public:
     //unique and count get
 
     //share str plus
-    Si* addSitable(Si* s, UINT8* str);
-    void Sitablefree(Si* s);
-    void ReadShare();//si<t>文字列配列へ保存
+    void sirPhfree(rPhtag* s);
+    void siTvfree(Tvalue* s);
+    void ReadShare();
+    Si* getSi();
+    rPhtag* getrPh(rPhtag* rpt);
+    Tvalue* addT(Tvalue* t, UINT8* v, UINT8* x);
+    rPhtag* addrPh(rPhtag* r, UINT8* s, UINT8* e, UINT8* t);
+    Tvalue* getTtagValue(Tvalue* tvs);
+    UINT8* getTValue();
+    UINT8* getphoneticPr();
+    UINT8* getValue();
+    //si<t>文字列配列へ保存
 };

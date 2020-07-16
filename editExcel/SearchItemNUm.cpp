@@ -203,7 +203,7 @@ void searchItemNum::colorsearch(Row* inrow, Items* IT, UINT8* itn, char* s) {
                 //‘SŠp•ÏŠ·
                 ite->col = sear.changenumber(ite->col);
 
-                color->cells->si = sear.changeKana(color->cells->si);//‚©‚È•ÏŠ·
+                //color->cells->si = sear.changeKana(color->cells->si);//‚©‚È•ÏŠ·
                 color->cells->si = sear.changenumber(color->cells->si);
 
                 ite->col = sear.slipNum(ite->col);//˜A‘±”Žš@íœ

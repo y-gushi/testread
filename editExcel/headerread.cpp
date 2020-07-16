@@ -776,11 +776,10 @@ CenterDerect* HeaderRead::centeroneread(UINT64 pos, UINT32 size, UINT16 n, char*
             }
         }
         else {
-            scd->kakutyo = (char*)malloc(1);
             scd->kakutyo = nullptr;
         }
         
-        if (scd->fielcomment) {
+        if (scd->fielcomment>0) {
             msize = ((UINT32)scd->fielcomment) + 1;
             scd->comment = (char*)malloc(msize);
             for (int i = 0; i < scd->fielcomment; i++) {//ファイルコメント
@@ -789,7 +788,6 @@ CenterDerect* HeaderRead::centeroneread(UINT64 pos, UINT32 size, UINT16 n, char*
             }
         }
         else {
-            scd->comment = (char*)malloc(1);
             scd->comment = nullptr;
         }
         
