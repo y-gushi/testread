@@ -4,7 +4,18 @@
 #include "ChangeArrayNumber.h"
 #include "CRC.h"
 #include "Header.h"
+/*
+<rPr>
+<sz val="11"/>
+<color theme="1"/>
+<rFont val="‚l‚r ‚oƒSƒVƒbƒN"/>
+<family val="2"/>
+<charset val="128"/>
+<scheme val="minor"/>
+</rPr>
 
+<rPh sb="5" eb="7">
+*/
 struct rPhtag {
     UINT8* sb;
     UINT8* eb;
