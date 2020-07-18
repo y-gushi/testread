@@ -939,6 +939,7 @@ inline UINT8* checkstyle::configstyle(UINT8* num)
 		rexfs[csXcount]->Avertical = csx->Avertical;//alignment vertical
 		rexfs[csXcount]->applyFont = csx->applyFont;
 		rexfs[csXcount]->applyFill = csx->applyFill;
+		rexfs[csXcount]->wraptext = csx->wraptext;
 
 		csXcount++; cellstyleXfsNum++;
 
@@ -1006,6 +1007,7 @@ inline UINT8* checkstyle::configstyle(UINT8* num)
 		rexfs[cellXfsNum]->AwrapText = cx->AwrapText;
 		rexfs[cellXfsNum]->Avertical = cx->Avertical;
 		rexfs[cellXfsNum]->horizontal = cx->horizontal;
+		rexfs[cellXfsNum]->quotePrefix = cx->quotePrefix;
 
 		std::cout << "セル追加 : "<<rexfs[cellXfsNum]->fontId<<"  num  "<< cellXfsNum << std::endl;
 

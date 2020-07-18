@@ -370,7 +370,7 @@ int main(char* fname[], int i) {
         std::cout << "xruid : " << sr->cellStyleRoot[res]->xruid << std::endl;
 
     UINT32 styleleng = Sdeco->readlen;//style 解凍データ長
-    UINT8 be[] = "bee";    
+    UINT8 be[] = "zozo";    
 
     sr->configstyle(be);
     sr->styledatawrite(styleleng);
