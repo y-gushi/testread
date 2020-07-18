@@ -30,8 +30,14 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
         UINT32 newcn = NA.ColumnCharnumtoNumber(cn);//列番号連番へ　入れた列
         UINT8* charcn = NA.InttoChar(newcn, &cnpl);//intを配列へ
 
-        UINT8* spanSt = charcn;//行スタート位置
-        UINT8* spanEn = charcn;//行終わり
+        size_t spsiz = cnpl + 1;
+        UINT8* spanSt = (UINT8*)malloc(spsiz);//行スタート位置
+        strcpy_s((char*)spanSt, spsiz, (char*)charcn);
+
+        UINT8* spanEn = (UINT8*)malloc(spsiz);//行終わり
+        strcpy_s((char*)spanEn, spsiz, (char*)charcn);
+        free(charcn);
+
         UINT8 HT[] = "29.25";
         UINT8* hT = (UINT8*)malloc(6);
         strcpy_s((char*)hT, 6, (const char*)HT);
@@ -109,7 +115,7 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
             UINT8* Bf = nullptr;
             UINT8* Cuw = nullptr;
 
-            cls = addcolatyle(cls, col, col, wi, styl, Hi, Bf, Cuw);//cols 追加
+            cls = addcolatyle(cls, mincol, maxcol, wi, styl, Hi, Bf, Cuw);//cols 追加
         }
     }
 
