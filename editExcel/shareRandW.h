@@ -16,6 +16,17 @@
 
 <rPh sb="5" eb="7">
 */
+struct rPrtag {
+    UINT8* sz;
+    UINT8* theme;
+    UINT8* rgb;
+    UINT8* rFont;
+    UINT8* family;
+    UINT8* charset;
+    UINT8* scheme;
+    rPrtag* next;
+};
+
 struct rPhtag {
     UINT8* sb;
     UINT8* eb;
@@ -32,13 +43,14 @@ struct Tvalue {
 struct Si {
     Tvalue* Ts;
     rPhtag* rp;
+    rPrtag* rPr;
     UINT8* phonetic;
 };
 
 class shareRandD {
 public:
-    int sicount = 0;//r タグの数
-    int siunique = 0;//siの数
+    size_t sicount = 0;//r タグの数
+    size_t siunique = 0;//siの数
     int sicount_place = 0;
     int siunique_place = 0;
     int mycount = 0;//string index 0始り
@@ -65,10 +77,14 @@ public:
 
     int freecount=0;//確認用
 
+    char* wd;
+    UINT32 wlen;
+
     shareRandD(UINT8* d, UINT64 l);
     ~shareRandD();
     void getSicount();
     char* writeSubstr(UINT8* d, char* s);
+    UINT8* addsistr(UINT8* sistr);
     UINT8* writeshare(UINT8* instr, int instrlen, char* subone, char* subtwo, char* subthree, char* subfour);
     void searchSi(char* ipto, char* iptt, char* iptth, char* iptf);
     //unique and count get
@@ -77,13 +93,26 @@ public:
     void sirPhfree(rPhtag* s);
     void siTvfree(Tvalue* s);
     void ReadShare();
-    Si* getSi();
+    Si* getSi(Si* h);
+    rPrtag* getrPr(rPrtag* rpt);
     rPhtag* getrPh(rPhtag* rpt);
     Tvalue* addT(Tvalue* t, UINT8* v, UINT8* x);
     rPhtag* addrPh(rPhtag* r, UINT8* s, UINT8* e, UINT8* t);
+    rPrtag* addrPr(rPrtag* r, UINT8* Sz, UINT8* co, UINT8* rf, UINT8* fa, UINT8* ch, UINT8* sc, UINT8* rgb);
     Tvalue* getTtagValue(Tvalue* tvs);
     UINT8* getTValue();
     UINT8* getphoneticPr();
     UINT8* getValue();
+
+    void sirPrfree(rPrtag* s);
+
+    void siwrite();
+
+    void writerpr(rPrtag* ro, Tvalue* ts);
+
+    void writerf(rPhtag* ro);
+    void writeT(Tvalue* t);
+    void oneStrwrite(char* str);
+    void oneStrplusDoubleq(char* str, UINT8* v);
     //si<t>文字列配列へ保存
 };

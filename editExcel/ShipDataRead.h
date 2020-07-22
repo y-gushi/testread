@@ -28,6 +28,7 @@ public:
     struct Items* additem(Items* r, UINT8* num, UINT8* co, UINT8* ni, UINT8* te, UINT8* el, UINT8* tw, UINT8* th, UINT8* fo, UINT8* fi, UINT8* si, UINT8* f);
     bool searchitemCell();
     void GetItems();
+    UINT8* sistrcopy(UINT8* s, UINT8* h);
     UINT8* sistrcopy(UINT8* s);
     void freeits();
 };

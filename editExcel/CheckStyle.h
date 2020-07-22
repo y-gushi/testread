@@ -469,15 +469,15 @@ inline UINT8* checkstyle::configstyle(UINT8* num)
 
 	//ID検索以外の値入れる
 	cx->applyNumberFormat = (UINT8*)malloc(2);
-	memcpy(cx->applyNumberFormat, (UINT8*)bewraptext[0], 2);
+	strcpy_s((char*)cx->applyNumberFormat, 2, bewraptext[0]);
 	cx->applyAlignment = (UINT8*)malloc(2);
-	memcpy(cx->applyAlignment, (UINT8*)bewraptext[1], 2);
+	strcpy_s((char*)cx->applyAlignment, 2, bewraptext[1]);
 	cx->Avertical = (UINT8*)malloc(7);
-	memcpy(cx->Avertical, (UINT8*)bewraptext[2], 7);
+	strcpy_s((char*)cx->Avertical, 7, bewraptext[2]);
 	cx->AwrapText = (UINT8*)malloc(2);
-	memcpy(cx->AwrapText, (UINT8*)bewraptext[3], 2);
+	strcpy_s((char*)cx->AwrapText, 2, bewraptext[3]);
 	cx->numFmtId = (UINT8*)malloc(2);
-	memcpy(cx->numFmtId, (UINT8*)bewraptext[4], 2);
+	strcpy_s((char*)cx->numFmtId, 2, bewraptext[4]);
 
 	cx->applyBorder = nullptr;
 	cx->horizontal = nullptr;

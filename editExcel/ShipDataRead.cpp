@@ -8,7 +8,7 @@ shipinfo::shipinfo(Row* cel) {
 }
 
 shipinfo::~shipinfo() {
-    freeits();
+    
     //free(shipday);//元で解放 no malloc
     //free(day);
     //セル引数　元で解放 cel no malloc
@@ -58,45 +58,52 @@ void shipinfo::shipdataRead() {
 //指定の文字までの文字列　削る
 UINT8* shipinfo::outuntil(UINT8 c, UINT8* st)
 {
-    int j = 0;
-    int i = 0;
+    size_t j = 0;
+    size_t i = 0;
     UINT8* p = nullptr;
 
-    while (st[j] != c && st[j] != '\0')
-        j++;
+    if (st) {
+        size_t msize = strlen((char*)st);
 
-    const UINT32 msize = (UINT32)j + 1;
-    p = (UINT8*)malloc(msize);
+        if (msize > 0) {
+            msize += 1;
+            p = (UINT8*)malloc(msize);
 
-    if (j == 0) {//最初に　(　があったら　)が読み始め
-        while (st[j] != ')')
-            j++;
-        j++;
-        int startpos = 0;
-        while (st[j] != '\0') {
-            if (!isspace(st[j])) {
-                p[startpos] = st[j];
-                startpos++;
-            }
-            j++;
-        }
-        p[startpos] = '\0';
-    }
-    else {
-        int t = 0; int h = 0;
-        if (p) {
-            while (h < j) {
-                if (!isspace(st[h])) {
-                    p[t] = st[h];
-                    t++;
+            while (st[j] != c && st[j] != '\0')
+                j++;
+
+            if (j == 0) {//最初に　(　があったら　)が読み始め
+                while (st[j] != ')')
+                    j++;
+                j++;
+
+                size_t startpos = 0;
+                while (st[j] != '\0') {
+                    if (!isspace(st[j])) {
+                        p[startpos] = st[j];
+                        startpos++;
+                    }
+                    j++;
                 }
-                h++;
+                p[startpos] = '\0';
             }
-            p[t] = '\0';
+            else {
+                int t = 0; int h = 0;
+                if (p) {
+                    while (h < j) {
+                        if (!isspace(st[h])) {
+                            p[t] = st[h];
+                            t++;
+                        }
+                        h++;
+                    }
+                    p[t] = '\0';
+                }
+            }
+
+            free(st);
         }
-    }
-    free(st);
-    st = nullptr;
+    }    
 
     return p;
 }
@@ -109,17 +116,17 @@ Items* shipinfo::additem(Items* r, UINT8* num, UINT8* co, UINT8* ni, UINT8* te, 
 {
     if (!r) {
         r = (Items*)malloc(sizeof(Items));
-        r->itn = sistrcopy(num);
-        r->col = sistrcopy(co);
-        r->s90 = sistrcopy(ni);
-        r->s100 = sistrcopy(te);
-        r->s110 = sistrcopy(el);
-        r->s120 = sistrcopy(tw);
-        r->s130 = sistrcopy(th);
-        r->s140 = sistrcopy(fo);
-        r->s150 = sistrcopy(fi);
-        r->s160 = sistrcopy(si);
-        r->sF = sistrcopy(f);
+        r->itn = sistrcopy(num, r->itn);
+        r->col = sistrcopy(co, r->col);
+        r->s90 = sistrcopy(ni,r->s90);
+        r->s100 = sistrcopy(te,r->s100);
+        r->s110 = sistrcopy(el, r->s110);
+        r->s120 = sistrcopy(tw, r->s120);
+        r->s130 = sistrcopy(th, r->s130);
+        r->s140 = sistrcopy(fo, r->s140);
+        r->s150 = sistrcopy(fi, r->s150);
+        r->s160 = sistrcopy(si, r->s160);
+        r->sF = sistrcopy(f, r->sF);
         r->next = nullptr;
     }
     else {
@@ -209,9 +216,12 @@ void shipinfo::GetItems() {
             if (sr->cells->col == ITcells[0] && ITcells[0] != 0) {//numbe
                 if (sr->cells->si) {
                     sr->cells->si = outuntil('(', sr->cells->si);
+                    std::cout << "item itn : " << sr->cells->si << std::endl;
                     INt = sr->cells->si;
                     itemnumFlag = true;
                 }
+                else
+                    INt = nullptr;
             }
             if (sr->cells->col == ITcells[1] && itemnumFlag && ITcells[1] != 0) {//color
                 if (sr->cells->si) {
@@ -221,6 +231,8 @@ void shipinfo::GetItems() {
                 else if (sr->cells->val) {
                     Colo = sr->cells->val;
                 }
+                else
+                    Colo = nullptr;
             }
             if (sr->cells->col == ITcells[2] && itemnumFlag && ITcells[2] != 0) {
                 if (sr->cells->si) {
@@ -229,6 +241,8 @@ void shipinfo::GetItems() {
                 else if (sr->cells->val) {
                     nine = sr->cells->val;
                 }
+                else
+                    nine = nullptr;
             }
             if (sr->cells->col == ITcells[3] && itemnumFlag && ITcells[3] != 0) {
                 if (sr->cells->si) {
@@ -237,6 +251,8 @@ void shipinfo::GetItems() {
                 else if (sr->cells->val) {
                     ten = sr->cells->val;
                 }
+                else
+                    ten = nullptr;
             }
             if (sr->cells->col == ITcells[4] && itemnumFlag && ITcells[4] != 0) {
                 if (sr->cells->si) {
@@ -245,6 +261,8 @@ void shipinfo::GetItems() {
                 else if (sr->cells->val) {
                     ele = sr->cells->val;
                 }
+                else
+                    ele = nullptr;
             }
             if (sr->cells->col == ITcells[5] && itemnumFlag && ITcells[5] != 0) {
                 if (sr->cells->si) {
@@ -253,6 +271,8 @@ void shipinfo::GetItems() {
                 else if (sr->cells->val) {
                     twe = sr->cells->val;
                 }
+                else
+                    twe = nullptr;
             }
             if (sr->cells->col == ITcells[6] && itemnumFlag && ITcells[6] != 0) {
                 if (sr->cells->si) {
@@ -261,6 +281,8 @@ void shipinfo::GetItems() {
                 else if (sr->cells->val) {
                     thr = sr->cells->val;
                 }
+                else
+                    thr = nullptr;
             }
             if (sr->cells->col == ITcells[7] && itemnumFlag && ITcells[7] != 0) {
                 if (sr->cells->si) {
@@ -269,6 +291,8 @@ void shipinfo::GetItems() {
                 else if (sr->cells->val) {
                     four = sr->cells->val;
                 }
+                else
+                    four = nullptr;
             }
             if (sr->cells->col == ITcells[8] && itemnumFlag && ITcells[8] != 0) {
                 if (sr->cells->si) {
@@ -277,6 +301,8 @@ void shipinfo::GetItems() {
                 else if (sr->cells->val) {
                     fif = sr->cells->val;
                 }
+                else
+                    fif = nullptr;
             }
             if (sr->cells->col == ITcells[9] && itemnumFlag && ITcells[9] != 0) {
                 if (sr->cells->si) {
@@ -285,6 +311,8 @@ void shipinfo::GetItems() {
                 else if (sr->cells->val) {
                     six = sr->cells->val;
                 }
+                else
+                    six = nullptr;
             }
             if (sr->cells->col == ITcells[10] && itemnumFlag && ITcells[10] != 0) {
                 if (sr->cells->si) {
@@ -292,43 +320,67 @@ void shipinfo::GetItems() {
                 }
                 else if (sr->cells->val) {
                     f = sr->cells->val;
-                }
+                }else
+                    f = nullptr;
             }
             sr->cells = sr->cells->next;
+            
         }
         itemnumFlag = false;
         if (INt && Colo && nine && ten && ele && twe && thr && four && fif && six && f) {
             its = additem(its, INt, Colo, nine, ten, ele, twe, thr, four, fif, six, f);
-            INt = nullptr; Colo = nullptr; nine = nullptr; ten = nullptr;; ele = nullptr;
-            twe = nullptr; thr = nullptr; four = nullptr; fif = nullptr; six = nullptr; f = nullptr;
+
+            std::cout << "item cou : " << INt << " ," << j << std::endl;
+            
+            j++;
         }
         else {
-            INt = nullptr; Colo = nullptr; nine = nullptr; ten = nullptr;; ele = nullptr;
-            twe = nullptr; thr = nullptr; four = nullptr; fif = nullptr; six = nullptr; f = nullptr;
+            std::cout << "item nnull : " << j << std::endl;
         }
+        INt = nullptr; Colo = nullptr; nine = nullptr; ten = nullptr;; ele = nullptr;
+        twe = nullptr; thr = nullptr; four = nullptr; fif = nullptr; six = nullptr; f = nullptr;
         sr = sr->next;
     }
 }
 
-UINT8* shipinfo::sistrcopy(UINT8* s) {
-    size_t ssiz = strlen((const char*)s);
-    UINT8* sistr = nullptr;
+UINT8* shipinfo::sistrcopy(UINT8* s,UINT8* h) {
 
-    if (ssiz > 0) {
-        ssiz += 1;
-        sistr = (UINT8*)malloc(ssiz);
-        strcpy_s((char*)sistr, ssiz, (char*)s);
+    h = nullptr;
+    size_t ssiz = 0;
+    if (s) {
+        ssiz = strlen((char*)s);
+        if (ssiz > 0) {
+            ssiz += 1;
+            h = (UINT8*)malloc(ssiz);
+            strcpy_s((char*)h, ssiz, (char*)s);
+        }        
     }
 
-    return sistr;
+    return h;
 }
 
 void shipinfo::freeits() {
-    struct Items* q;
+    int coun = 0;
+    Items* q=nullptr;
     while (its) {
         q = its->next;  /* 次へのポインタを保存 */
-        
-        free(its);
+        if (its->itn)
+            std::cout << "itn : " << its->itn << " " << coun << std::endl;
+        free(its->itn);
+        free(its->col);
+        free(its->s100);
+        free(its->s110);
+        free(its->s120);
+        if (its->s130)
+            std::cout << "130 : " << its->s130 <<" "<< coun << std::endl;
+        free(its->s130);
+        free(its->s140);
+        free(its->s150);
+        free(its->s160);
+        free(its->s90);
+        free(its->sF);
+        //free(its);
         its = q;
+        coun++;
     }
 }

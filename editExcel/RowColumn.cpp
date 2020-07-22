@@ -165,31 +165,37 @@ UINT8* Ctags::getSi(UINT8* v, UINT32 vl) {
 
     Tvalue* RootSi = sh->sis[Vnum]->Ts;//親　参照
 
-    while (RootSi) {//t タグ　総合文字列　長さ確認
-        Tstrlen = 0;
-        while (RootSi->Tv[Tstrlen] != '\0') {
-            sistrlen++; Tstrlen++;
-        }
-        RootSi = RootSi->next;
-    }
-    RootSi = sh->sis[Vnum]->Ts;
-
-    size_t slen = sistrlen + 1;
-    Vsi = (UINT8*)malloc(slen);//メモリ確保
-
-    sistrlen = 0;
-
-    while (RootSi) {//tタグ足し合わせる
-        Tstrlen = 0;//初期化
-        if (RootSi->Tv) {
-            while (RootSi->Tv[Tstrlen] != '\0') {
-                Vsi[sistrlen] = RootSi->Tv[Tstrlen];
-                sistrlen++; Tstrlen++;
+    if (RootSi) {
+        while (RootSi) {//t タグ　総合文字列　長さ確認
+            Tstrlen = 0;
+            if (RootSi->Tv) {
+                while (RootSi->Tv[Tstrlen] != '\0') {
+                    sistrlen++; Tstrlen++;
+                }
             }
             RootSi = RootSi->next;
         }
+        RootSi = sh->sis[Vnum]->Ts;
+
+        if (sistrlen > 0) {
+            size_t slen = sistrlen + 1;
+            Vsi = (UINT8*)malloc(slen);//メモリ確保
+
+            sistrlen = 0;
+
+            while (RootSi) {//tタグ足し合わせる
+                Tstrlen = 0;//初期化
+                if (RootSi->Tv) {
+                    while (RootSi->Tv[Tstrlen] != '\0') {
+                        Vsi[sistrlen] = RootSi->Tv[Tstrlen];
+                        sistrlen++; Tstrlen++;
+                    }
+                }
+                RootSi = RootSi->next;
+            }
+            Vsi[sistrlen] = '\0';
+        }
     }
-    Vsi[sistrlen] = '\0';
 
     return Vsi;
 }

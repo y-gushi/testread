@@ -160,6 +160,7 @@
     <ClCompile Include="timeget.cpp" />
     <ClCompile Include="UINTtoshiftJIS.cpp" />
     <ClCompile Include="unitchange.cpp" />
+    <ClCompile Include="writeshare.cpp" />
     <ClCompile Include="ZipFilewrite.cpp" />
   </ItemGroup>
   <ItemGroup>

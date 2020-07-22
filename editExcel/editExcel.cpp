@@ -197,7 +197,7 @@ int main(char* fname[], int i) {
         decsheet->dataread(hr->LH->pos, cddata->nonsize);
     }
     hr->freeLH();
-    //hr->freeheader();
+    hr->freeheader();
 
     Ctags* ms = new Ctags(decsheet->ReadV, decsheet->readlen, sharray);
 
@@ -207,6 +207,8 @@ int main(char* fname[], int i) {
 
     shipinfo* sg = new shipinfo(ms->rows);//シートデータ参照　freeなし
     sg->GetItems();//mallocなし　シートとセット
+
+    delete ms;
 
     PLR.close();
     delete sharray;
@@ -226,11 +228,15 @@ int main(char* fname[], int i) {
         cddata = hr2->centeroneread(hr2->readpos, hr2->ER->size, hr2->ER->centralnum, shares, &Zr);
         if (cddata)
             break;
+        hr2->freeheader();
     }
     if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
         hr2->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
         decShare->dataread(hr2->LH->pos, cddata->nonsize);
+        hr2->freeLH();
     }
+
+    hr2->freeheader();
     shareRandD *hattyushare = new shareRandD(decShare->ReadV, decShare->readlen);//share 再初期化 検索用に呼び出し
 
     hattyushare->getSicount();//get si count
@@ -247,16 +253,29 @@ int main(char* fname[], int i) {
     //シェアー書き込み
     UINT8* sharedata = nullptr;//share書き込み　データ
 
-    sharedata = hattyushare->writeshare((UINT8*)inMainstr, strlen(inMainstr), inFourstr, inThreestr, inTwostr, inSubstr);//share文字列書き込み share data更新
+    //シェアーデータ書き込み
+    hattyushare->siwrite();
+
+    FILE* f = nullptr;
+    fopen_s(&f, mfile, "wb");
+    if (!f)
+        printf("ファイルを開けませんでした");
+
+    for (UINT64 i = 0; i < hattyushare->wlen; i++)
+        fwrite(&hattyushare->wd[i], sizeof(char), 1, f);
+    fclose(f);
+
+    //sharedata = hattyushare->writeshare((UINT8*)inMainstr, strlen(inMainstr), inFourstr, inThreestr, inTwostr, inSubstr);//share文字列書き込み share data更新
     UINT64 shrelength = hattyushare->writeleng;
     free(sharedata);//書き込みデータ解放
+
     delete hr2;
     delete decShare;
 
    //-----------------------
    //スタイルシート読み込み
    //-----------------------//
-
+    
     HeaderRead *hHinfo = new HeaderRead(Zfn);
     hHinfo->endread(&Zr);//終端コードの読み込み
     DeflateDecode* Sdeco = new DeflateDecode(&Zr);
@@ -270,11 +289,9 @@ int main(char* fname[], int i) {
     if (cddata) {//ファイル名が合えばローカルヘッダー読み込み
         hHinfo->localread(cddata->localheader, &Zr);//sharesstringsの読み込み
         Sdeco->dataread(hHinfo->LH->pos, cddata->nonsize);
+        hHinfo->freeLH();
     }
-    FILE* f = nullptr;
-    fopen_s(&f, mfile, "wb");
-    if (!f)
-        printf("ファイルを開けませんでした");
+    hHinfo->freeheader();   
 
     checkstyle* sr = new checkstyle();
 
@@ -299,10 +316,6 @@ int main(char* fname[], int i) {
 
     sr->styledatawrite(styleleng);
 
-    for (UINT64 i = 0; i < sr->wdlen;i++)
-        fwrite(&sr->wd[i], sizeof(char), 1, f);
-    fclose(f);
-
     delete sr;
     delete Sdeco;
 
@@ -311,7 +324,7 @@ int main(char* fname[], int i) {
    //発注到着シート読み込み
 
    //-----------------------//
-
+    
     DeflateDecode* Hdeco=nullptr;
 
     char sheet[] = "worksheets/sheet";
@@ -329,7 +342,7 @@ int main(char* fname[], int i) {
     MatchColrs* matchs = nullptr;
     MatchColrs* matchsroot = nullptr;
     char teststyl[] = "200";//test用
-
+    /*
     while (hHinfo->filenum < hHinfo->ER->centralsum) {
         //ファイル名 sheet 部分一致検索
         cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, sheet, &Zr);
@@ -366,14 +379,15 @@ int main(char* fname[], int i) {
         hHinfo->freeheader();
     }
     std::cout << "end item search" << std::endl;
+    */
 
-    //delete hattyushare;
-    //delete hHinfo;
+    delete hHinfo;
+    sg->freeits();
 
-    //delete sg;
-    delete ms;
-
-    Zr.close();
+    delete hattyushare;
+    delete sg;    
+    if(Zr)
+        Zr.close();
     
     //_CrtDumpMemoryLeaks();//メモリ リーク レポートを表示
 
