@@ -5,6 +5,44 @@
 #include <iostream>
 #include "typechange.h"
 
+struct worksheetV {
+    UINT8* xmlns;
+    UINT8* r;
+    UINT8* mc;
+    UINT8* x14ac;
+    UINT8* xr;
+    UINT8* xr2;
+    UINT8* xr3;
+    UINT8* Ignorable;
+    UINT8* uid;
+};
+
+struct SheetPr {
+    UINT8* tint;
+    UINT8* rgb;
+    UINT8* fitToPage;
+};
+//-----------------------
+struct cfvo {
+    UINT8* type;
+    UINT8* val;
+};
+
+struct cfcolor {
+    UINT8* rgb;
+    UINT8* theme;
+};
+
+struct cfRule {
+    UINT8* type;
+    UINT8* priority;
+    UINT8* dxfId;
+    UINT8* opara;
+    UINT8* formula;
+    cfvo* vo;
+    cfcolor* ccolor;
+};
+//------------------------
 struct Items {
     UINT8* itn = nullptr;
     UINT8* col = nullptr;
@@ -93,4 +131,13 @@ struct MargeCell {
     UINT8* scell;
     UINT8* ecell;
     MargeCell* next;
+};
+
+struct SheetViews {
+    UINT8* zoomScaleNormal;
+    UINT8* workbookViewId;
+    UINT8* tabSelected;
+    UINT8* workbookViewId;
+    Pane* pan;
+    selection* selec;
 };

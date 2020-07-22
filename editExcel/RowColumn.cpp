@@ -34,11 +34,12 @@ Ctags::~Ctags(){
 
 void Ctags::sheetread() {
 
+    xmlheaderRead();
+
     GetSheetPr();
 
-    GetDiment();
-
     GetSelectionPane();
+
     Getcols();
 
     GetCtagValue();
@@ -384,44 +385,264 @@ void Ctags::getCtag() {
 
 }
 
+
+void Ctags::xmlheaderRead() {
+    const char* worksheet = "<worksheet";//10文字
+
+    UINT8 wo[11] = { 0 };
+    int result = 1;
+
+    while (result != 0) {
+        for (int i = 0; i < 9; i++) {
+            wo[i] = wo[i + 1];
+        }
+        wo[9] = data[p];
+        wo[10] = '\0';
+        p++;
+        
+        result = strncmp((char*)wo, worksheet, 10);
+        if (result == 0) {
+            readworksheet();
+        }
+    }
+}
+
+void Ctags::readworksheet() {
+    const char* worstr[] = { "xmlns=\"","xmlns:r=\"","xmlns:mc=\"","xmlns:x14ac=\"","xmlns:xr=\"",
+        "xmlns:xr2=\"","xmlns:xr3=\"","mc:Ignorable=\"","xr:uid=\"" };//7 9 10 13 10 11 11 14  8文字
+
+    UINT8 xmln[8] = { 0 };
+    UINT8 r[10] = { 0 };
+    UINT8 mcxr[11] = { 0 };
+    UINT8 x14[14] = { 0 };
+    UINT8 xr23[12] = { 0 };
+    UINT8 ign[15] = { 0 };
+    UINT8 uid[9] = { 0 };
+
+    UINT8* Xmln = nullptr;
+    UINT8* R = nullptr;
+    UINT8* Mc = nullptr;
+    UINT8* X14 = nullptr;
+    UINT8* Xr = nullptr;
+    UINT8* Xr2 = nullptr;
+    UINT8* Xr3 = nullptr;
+    UINT8* Ign = nullptr;
+    UINT8* UId = nullptr;
+
+    while (data[p] != '>') {
+        for (int j = 0; j < 14 - 1; j++) {
+            ign[j] = ign[j + 1];
+            if (j < 13 - 1)
+                x14[j] = x14[j + 1];
+            if (j < 11 - 1)
+                xr23[j] = xr23[j + 1];
+            if (j < 10 - 1)
+                mcxr[j] = mcxr[j + 1];
+            if (j < 9 - 1)
+                r[j] = r[j + 1];
+            if (j < 8 - 1)
+                uid[j] = uid[j + 1];
+            if (j < 7 - 1)
+                xmln[j] = xmln[j + 1];
+        }
+
+        ign[14 - 1] = x14[13 - 1] = xr23[11 - 1] = mcxr[10 - 1] = r[9 - 1] = uid[8 - 1] = xmln[7 - 1] = data[p];
+        ign[14] = x14[13] = xr23[11] = mcxr[10] = r[9] = uid[8] = xmln[7] = '\0';
+        p++;
+
+        if (strncmp((char const*)xmln, worstr[0], 7) == 0)
+            Xmln = getvalue();
+
+        if (strncmp((char const*)uid, worstr[8], 8) == 0)
+            UId = getvalue();
+
+        if (strncmp((char const*)r, worstr[1], 9) == 0)
+            R = getvalue();
+
+        if (strncmp((char const*)mcxr, worstr[4], 10) == 0)
+            Xr = getvalue();
+
+        if (strncmp((char const*)mcxr, worstr[2], 10) == 0)
+            Mc = getvalue();
+
+        if (strncmp((char const*)xr23, worstr[6], 11) == 0)
+            Xr3 = getvalue();
+
+        if (strncmp((char const*)xr23, worstr[5], 11) == 0)
+            Xr2 = getvalue();
+
+        if (strncmp((char const*)ign, worstr[7], 14) == 0)
+            Ign = getvalue();
+
+        if (strncmp((char const*)x14, worstr[3], 13) == 0)
+            X14 = getvalue();
+    }
+    wsV = (worksheetV*)malloc(sizeof(worksheetV));
+    wsV->Ignorable = Ign;
+    wsV->r = R;
+    wsV->xmlns = Xmln;
+    wsV->uid = UId;
+    wsV->xr = Xr;
+    wsV->xr2 = Xr2;
+    wsV->xr3 = Xr3;
+    wsV->mc = Mc;
+    wsV->x14ac = X14;
+
+}
+
+void Ctags::readsheetPr() {
+    const char* tc[] = { "tint=\"","rgb=\"" };//6 5
+    const char* pagest = "fitToPage=\"";//11
+    const char* shPrEnd = "</sheetPr>";//10
+
+    UINT8 epr[7] = { 0 };
+    UINT8 rg[6] = { 0 };
+    UINT8 pr[12] = { 0 };
+    UINT8 pa[11] = { 0 };
+
+    UINT8* tin = nullptr;
+    UINT8* Rgb = nullptr;
+    UINT8* fit = nullptr;
+
+    int resu = 1;
+
+    while (resu != 0) {
+        for (int j = 0; j < 11 - 1; j++) {
+            pr[j] = pr[j + 1];
+            if (j < 10 - 1)
+                pa[j] = pa[j + 1];
+            if (j < 6 - 1)
+                epr[j] = epr[j + 1];
+            if (j < 5 - 1)
+                rg[j] = rg[j + 1];
+        }
+        pr[11 - 1]= pa[10 - 1]= epr[6 - 1]= rg[5 - 1] = data[p];
+        pr[11] = pa[10] = epr[6] = rg[5] = '\0';
+        p++;
+
+        resu = strncmp((char const*)pr, pagest, 11);
+        if (resu == 0)
+            fit = getvalue();
+
+        resu = strncmp((char const*)epr, tc[0], 6);
+        if (resu == 0)
+            tin = getvalue();
+
+        resu = strncmp((char const*)rg, tc[1], 6);
+        if (resu == 0)
+            Rgb = getvalue();
+
+        resu = strncmp((char const*)pa, shPrEnd, 10);
+    }
+
+    Pr = (SheetPr*)malloc(sizeof(SheetPr));
+    Pr->tint = tin;
+    Pr->fitToPage = fit;
+    Pr->rgb = Rgb;
+}
+
 // <sheetPr get
 void Ctags::GetSheetPr() {
     /* <sheetPr>
 <tabColor tint="0.4" theme="7"/>
 <pageSetUpPr fitToPage="1"/>
 </sheetPr>*/
-
-//const char* shPr = "<sheetPr";//8
-//const char* shPrEnd = "</sheetPr>";//10
+    const char* shPr = "<sheetPr";//8    
     const char* diment = "<dimension";//10
-    UINT8 pr[10] = { 0 };
+
+    UINT8 epr[11] = { 0 };
+    UINT8 pr[9] = { 0 };
     p = 0;//sheetdata
     int ucode = 0;//dimention <sheetPr
     int result = 0;
 
+    UINT8* Dim = nullptr;
+
     do {
         for (int j = 0; j < 10 - 1; j++) {
-            pr[j] = pr[j + 1];
+            epr[j] = epr[j + 1];
+            if(j<8-1)
+                pr[j] = pr[j + 1];
         }
-        pr[10 - 1] = data[p + ucode];
-        ucode++;
+        pr[10 - 1] = data[p];
+        p++;
 
         result = strncmp((char const*)pr, diment, 10);
+        if (result == 0)
+            readsheetPr();
 
+        result = strncmp((char const*)pr, diment, 10);
+        if (result == 0) {
+            Dim = getvalue();
+            GetDiment(Dim);
+        }
     } while (result != 0);
 
-    ucode -= 10;
+}
 
-    UINT32 msize = (UINT32)ucode + 1;
+//demention get
+void Ctags::GetDiment(UINT8* d) {
 
-    headXML = (UINT8*)malloc(msize);
+    dm = (demention*)malloc(sizeof(demention));
+    dm->sC = nullptr;
+    dm->sR = nullptr;
+    dm->eC = nullptr;//demention end 列
+    dm->eR = nullptr;//demention end 行
 
-    if (headXML) {
-        for (int i = 0; i < ucode; i++) {//dimention
-            headXML[i] = data[p];
-            p++;
+    // <dimension ref="A1:EJ128"/>を検索
+    size_t collen = 0;
+    size_t rowlen = 0;
+    size_t dimstrlen = 0;
+
+    while (d[dimstrlen] != ':' && d[dimstrlen]!='\0') {//文字数確認
+        if (d[dimstrlen] > 64)//列番号
+            sClen++;
+        else//行番号
+            sRlen++;
+        dimstrlen++;
+    }
+    dm->sC = (UINT8*)calloc(sClen+1, sizeof(UINT8));//demention start 列
+    dm->sR = (UINT8*)calloc(sRlen+1, sizeof(UINT8));//demention start 行
+    sClen = 0; sRlen = 0;
+    for (size_t i = 0; i < dimstrlen; i++) {
+        if (d[i] > 64) {
+            dm->sC[sClen] = d[i];
+            sClen++;
         }
-        headXML[ucode] = '\0';
+        else {
+            dm->sR[sRlen] = d[i];
+            sRlen++;
+        }
+    }
+    dm->sC[sClen] = '\0'; dm->sR[sRlen] = '\0';
+
+    if (d[dimstrlen] == ':') {
+        dimstrlen++;//':' 次へ
+        size_t stp = dimstrlen;//後半スタート位置
+
+        while (d[dimstrlen] != '\0') {//endcell
+            if (d[dimstrlen] > 64) //列番号
+                eClen++;
+            else//行番号
+                eRlen++;
+            dimstrlen++;
+        }
+        dm->eC = (UINT8*)calloc(eClen+1, sizeof(UINT8));//demention end 列
+        dm->eR = (UINT8*)calloc(eRlen+1, sizeof(UINT8));//demention end 行
+        eClen = 0; eRlen = 0;
+        for (size_t i = 0; i < (dimstrlen-stp); i++) {
+            if (d[i] > 64) {
+                dm->eC[eClen] = d[i];
+                eClen++;
+            }
+            else {
+                dm->eR[eRlen] = d[i];
+                eRlen++;
+            }
+        }        
+        dm->eC[eClen] = '\0'; dm->eR[eRlen] = '\0';
+
+        maxcol = NA.ColumnArraytoNumber(dm->eC, eClen);//現max列
     }
 }
 
@@ -594,75 +815,79 @@ void Ctags::Getrow() {
     rows = addrows(rows, rownum, sps, spe, h, tb, s, cf, ch, nullptr);
 }
 
-//demention get
+void Ctags::readsheetviews() {
+    const char* shview[] = { "zoomScaleNormal=\"","workbookViewId=\"","tabSelected=\"","workbookViewId=\"","<pane","<selection " };
+    const char* endtag = "</sheetView>";//12
+    //17 16 13 16 6 11
+    UINT8 zsn[18] = { 0 };
+    UINT8 wbV[17] = { 0 };
+    UINT8 tbs[14] = { 0 };
+    UINT8 pan[7] = { 0 };
+    UINT8 sel[12] = { 0 };
+    UINT8 clo[13] = { 0 };
 
-void Ctags::GetDiment() {
+    UINT8* zSN = nullptr;
+    UINT8* WbV = nullptr;
+    UINT8* tS = nullptr;
+    UINT8* wVI = nullptr;
+    Pane* pa = nullptr;
+    selection* Sele = nullptr;
 
-    UINT8 sd[17] = { 0 };
-    int spos = 0;
+    int res = 1;
 
-    dm = (demention*)malloc(sizeof(demention));
-    dm->sC = (UINT8*)calloc(5,sizeof(UINT8));//demention start 列
-    dm->sR = (UINT8*)calloc(5, sizeof(UINT8));//demention start 行
-    dm->eC = (UINT8*)calloc(5, sizeof(UINT8));//demention end 列
-    dm->eR = (UINT8*)calloc(5, sizeof(UINT8));//demention end 行
-
-    // <dimension ref="A1:EJ128"/>を検索
-
-    while (spos < dlen) {// : までコピー
-        for (int j = 0; j < 16 - 1; j++) {
-            sd[j] = sd[j + 1];
+    do {
+        for (int j = 0; j < 17 - 1; j++) {//文字数カウント
+            zsn[j] = zsn[j + 1];
+            if(16-1>j)
+                wbV[j] = wbV[j + 1];
+            if (13 - 1 > j)
+                tbs[j] = tbs[j + 1];
+            if (6 - 1 > j)
+                pan[j] = pan[j + 1];
+            if (11 - 1 > j)
+                sel[j] = sel[j + 1];
+            if (12 - 1 > j)
+                clo[j] = clo[j + 1];
         }
-        sd[16 - 1] = data[p];//最後に付け加える
+        wbV[16 - 1] = tbs[13 - 1] = pan[6 - 1] = sel[11 - 1] = clo[12 - 1] = zsn[17 - 1] = data[p];//最後に付け加える
         p++;
 
-        if (strncmp((char const*)sd, dement, 16) == 0)
-            break;
-    }
+        if (strncmp((char const*)zsn, shview[0], 17) == 0)
+            zSN = getvalue();
 
-    while (data[p] != ':') {//startcell
-        if (data[p] > 64) {//列番号
-            dm->sC[sClen] = data[p];
-            sClen++;
-        }
-        else {//行番号
-            dm->sR[sRlen] = data[p];
-            sRlen++;
-        }
-        p++;
-    }
+        if (strncmp((char const*)wbV, shview[1], 16) == 0)
+            WbV = getvalue();
 
-    dm->sC[sClen] = '\0'; dm->sR[sRlen] = '\0';
-    p++;//':' 次へ
+        if (strncmp((char const*)tbs, shview[2], 13) == 0)
+            tS = getvalue();
 
-    while (data[p] != '"') {//endcell
-        if (data[p] > 64) {//列番号
-            dm->eC[eClen] = data[p];
-            eClen++;
-        }
-        else {//行番号
-            dm->eR[eRlen] = data[p];
-            eRlen++;
-        }
-        p++;
-    }
+        if (strncmp((char const*)wbV, shview[3], 16) == 0)
+            wVI = getvalue();
 
-    dm->eC[eClen] = '\0'; dm->eR[eRlen] = '\0';
+        if (strncmp((char const*)pan, shview[4], 6) == 0)
+            pa=GetPane(pa);
 
-    maxcol = NA.ColumnArraytoNumber(dm->eC, eClen);//現max列
+        if (strncmp((char const*)sel, shview[5], 11) == 0)
+            Sele=getselection(Sele);
+
+        res = strncmp((char const*)clo, endtag, 12);
+
+    } while (res != 0);
+
+    ShV = (SheetViews*)malloc(sizeof(SheetViews));
+    ShV->pan = pa;
+    ShV->selec = Sele;
+    ShV->tabSelected = tS;
+    ShV->workbookViewId = WbV;
+    ShV->zoomScaleNormal = zSN;
+    
 }
-
 //selection tag get　テーブルに
 void Ctags::GetSelectionPane() {
 
-    const char* pane = "<pane";//5
-    const char* select = "<selection";//10
-    UINT8 sve[14] = { 0 };
     UINT8 PN[11] = { 0 };
-    UINT8 slcs[11] = { 0 };
-    int PNlen = 0;
-    UINT8 PT[6] = { 0 };
 
+    int PNlen = 0;
     int res = 1;
     int panetagres = 0;
 
@@ -671,61 +896,17 @@ void Ctags::GetSelectionPane() {
         for (int j = 0; j < 10 - 1; j++) {//文字数カウント
             PN[j] = PN[j + 1];
         }
-        PN[10 - 1] = data[p + PNlen];//最後に付け加える
-        PNlen++;
-
-        res = strncmp((char const*)PN, startSV, 10);
-    }
-    //std::cout << "data[p + PNlen] : " << data[p + PNlen] << std::endl;
-    if (data[p + PNlen] == 's') {// <sheetViews>tag
-        PNlen += 3;// <sheetViews> 閉じタグとばす
-    }
-    while (data[p + PNlen - 1] != '>')//文字数カウント sheetView >閉じまで
-        PNlen++;
-
-    UINT32 msize = (UINT32)PNlen + 1;
-    dimtopane = (UINT8*)malloc(msize);
-    if (dimtopane) {
-        for (int i = 0; i < PNlen; i++) {///to <sheetView 文字列コピー
-            dimtopane[i] = data[p];
-            p++;
-        }
-        dimtopane[PNlen] = '\0';
-        //std::cout << "cim to pane" << dimtopane << std::endl;
-    }
-
-    res = 1;
-    int seleresult = 0;
-
-    while (res != 0)//selectionPane vals get
-    {
-        for (int j = 0; j < 13 - 1; j++) {
-            sve[j] = sve[j + 1];
-            if (j < 10 - 1) {
-                slcs[j] = slcs[j + 1];
-            }
-            if (j < 5 - 1) {
-                PT[j] = PT[j + 1];
-            }
-        }
-        PT[5 - 1] = sve[13 - 1] = slcs[10 - 1] = data[p];
+        PN[10 - 1] = data[p];//最後に付け加える
         p++;
 
-        seleresult = strncmp((char const*)slcs, select, 10);
-        panetagres = strncmp((char const*)PT, pane, 5);
-        if (panetagres == 0) {// <pane tag get
-            //std::cout << "get selection  pane" << std::endl;
-            GetPane();
+        res = strncmp((char const*)PN, startSV, 10);
+        if (res == 0) {
+            readsheetviews();
         }
-        if (seleresult == 0) {
-            getselection();
-        }
-
-        res = strncmp((char const*)sve, SVend, 13);// </sheetViews>で抜ける
-    }
+    }    
 }
 
-void Ctags::getselection() {
+selection* Ctags::getselection(selection* se) {
     /*
     <selection/>
     <selection pane="topRight"/>
@@ -749,6 +930,7 @@ void Ctags::getselection() {
 
     if (data[p] == '/') {//tag終了
         //sct = SLTaddtable(sct, pa, ac, sq);//すべてnullptrわたす
+        return nullptr;
     }
     else {
         while (data[p] != '>') {
@@ -763,51 +945,24 @@ void Ctags::getselection() {
             p++;
 
             if (strncmp((char const*)pn, ecp, 6) == 0) {//pane=" 一致
-                panelen = 0;
-                while (data[p + panelen] != '"')
-                    panelen++;//文字数カウント
-                UINT32 pasize = (UINT32)panelen + 1;
-                pa = (UINT8*)malloc(pasize);
-                for (int i = 0; i < panelen; i++) {
-                    pa[i] = data[p];//pane str
-                    p++;
-                }
-                pa[panelen] = '\0';
+                pa = getvalue();
             }
 
             if (strncmp((char const*)at, active, 12) == 0) {//activeCell=" 一致
-                activeCelllen = 0;
-                while (data[p + activeCelllen] != '"')
-                    activeCelllen++;//文字数カウント
-                UINT32 acsize = (UINT32)activeCelllen + 1;
-                ac = (UINT8*)malloc(acsize);
-                for (int i = 0; i < activeCelllen; i++) {
-                    ac[i] = data[p];//pane str
-                    p++;
-                }
-                ac[activeCelllen] = '\0';
+                ac = getvalue();
             }
 
             if (strncmp((char const*)sr, sqref, 7) == 0) {//sqref=" 一致
-                sqreflen = 0;
-                while (data[p + sqreflen] != '"')
-                    sqreflen++;//文字数カウント
-                UINT32 sqsize = (UINT32)sqreflen + 1;
-                sq = (UINT8*)malloc(sqsize);
-                for (int i = 0; i < sqreflen; i++) {
-                    sq[i] = data[p];//pane str
-                    p++;
-                }
-                sq[sqreflen] = '\0';
+                sq = getvalue();
             }
         }
-        //if (pa || ac || sq)
     }
-    sct = SLTaddtable(sct, pa, ac, sq);//構造体へコピー
-    
+    se = SLTaddtable(se, pa, ac, sq);//構造体へコピー
+
+    return se;    
 }
 
-void Ctags::GetPane() {
+Pane* Ctags::GetPane(Pane* pa) {
 
     const char* PaneTags[] = { "xSplit=\"","ySplit=\"","topLeftCell=\"","activePane=\"","state=\"" };
 
@@ -856,8 +1011,9 @@ void Ctags::GetPane() {
             s = getvalue();
     }
 
-    Panes = addpanetable(Panes, X, Y, tL, ap, s);
+    pa = addpanetable(pa, X, Y, tL, ap, s);
 
+    return pa;
 }
 
 Pane* Ctags::addpanetable(Pane* p, UINT8* x, UINT8* y, UINT8* tl, UINT8* ap, UINT8* sta) {
@@ -1053,13 +1209,39 @@ void Ctags::Ctableprint(C* c) {
     }
 }
 
+
+
 // last string copy
 void Ctags::getfinalstr() {
+    /*
+    <phoneticPr fontId="1"/>
+<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>
+<pageSetup paperSize="9" orientation="portrait" r:id="rId1"/>
+<drawing r:id="rId2"/>
+    */
+    /*
+    条件付き書式
+    <conditionalFormatting sqref="PS69:PS74">
+<cfRule type="colorScale" priority="129">
+<colorScale>
+<cfvo type="num" val="0"/>
+<cfvo type="num" val="25"/>
+<cfvo type="num" val="50"/>
+<color rgb="FFFF0000"/>
+<color rgb="FF00B050"/>
+<color theme="0"/>
+</colorScale>
+</cfRule>
+</conditionalFormatting>
+*/
 
     UINT32 s = UINT32(dlen) - UINT32(p);
     UINT64 i = 0;
     const char* margeinfo = "<mergeCells count=\"";//19char
     const char* marge = "<mergeCell ref=\"";//16char
+    const char* endtag = "</worksheet>";//12char
+    const char* conditionary = "<conditionalFormatting";
+    const char* crule = "<cfRule";
 
     UINT8 sm[20] = { 0 };
     UINT8 Sm[17] = { 0 };

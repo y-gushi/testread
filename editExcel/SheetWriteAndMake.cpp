@@ -143,7 +143,7 @@ void Ctags::writesheetdata() {
             p++;
         }
     }
-
+    writeheadpart();
     writeDiment();
     writeSelection();
     writecols();
@@ -153,26 +153,61 @@ void Ctags::writesheetdata() {
     //std::cout << "size : " << p << " dlen : " << dlen << std::endl;
 }
 
+void Ctags::writeheadpart() {
+    const char* shpr[] = { "<sheetPr>","<tabColor","rgb=\""," tint=\"","<pageSetUpPr"," fitToPage=\"","</sheetPr>" };
+    UINT8 clo = '>';
+    UINT8 sla[] = "/>";
+
+    // <sheetPr write
+    oneStrwrite((UINT8*)shpr[0]);
+    if (Pr) {
+        oneStrwrite((UINT8*)shpr[1]);
+        if (Pr->rgb)
+            oneStrplusDoubleq((UINT8*)shpr[2], Pr->rgb);
+        if (Pr->tint)
+            oneStrplusDoubleq((UINT8*)shpr[3], Pr->tint);
+        oneStrwrite(sla);
+
+        if (Pr->fitToPage) {
+            oneStrwrite((UINT8*)shpr[4]);
+            oneStrplusDoubleq((UINT8*)shpr[2], Pr->fitToPage);
+            oneStrwrite(sla);
+        }
+    }
+    oneStrwrite((UINT8*)shpr[6]);
+}
+
 //diment書き込み
 void Ctags::writeDiment() {
     const char* dimstart = "<dimension ref=\"";
     //std::cout << "ディメント更新" << p << std::endl;
-    while (dimstart[writep] != '\0') {
-        wd[p] = dimstart[writep]; p++; writep++;
-    }writep = 0;
-    while (dm->sC[writep] != '\0') {//スタート列
-        wd[p] = dm->sC[writep]; p++; writep++;
-    }writep = 0;
-    while (dm->sR[writep] != '\0') {//スタート行
-        wd[p] = dm->sR[writep]; p++; writep++;
-    }writep = 0;
-    wd[p] = ':'; p++;
-    while (dm->eC[writep] != '\0') {//終了列
-        wd[p] = dm->eC[writep]; p++; writep++;
-    }writep = 0;
-    while (dm->eR[writep] != '\0') {//終了行
-        wd[p] = dm->eR[writep]; p++; writep++;
-    }writep = 0;
+    if (dm) {
+        while (dimstart[writep] != '\0') {
+            wd[p] = dimstart[writep]; p++; writep++;
+        }writep = 0;
+        if (dm->sC) {
+            while (dm->sC[writep] != '\0') {//スタート列
+                wd[p] = dm->sC[writep]; p++; writep++;
+            }writep = 0;
+        }
+        if (dm->sR) {
+            while (dm->sR[writep] != '\0') {//スタート行
+                wd[p] = dm->sR[writep]; p++; writep++;
+            }writep = 0;
+        }
+        wd[p] = ':'; p++;
+        if (dm->eC) {
+            while (dm->eC[writep] != '\0') {//終了列
+                wd[p] = dm->eC[writep]; p++; writep++;
+            }writep = 0;
+        }
+        if (dm->eR) {
+            while (dm->eR[writep] != '\0') {//終了行
+                wd[p] = dm->eR[writep]; p++; writep++;
+            }writep = 0;
+        }
+    }
+    
     //std::cout << "ディメント更新" << dm->eC << std::endl;
 }
 //cols書き込み
@@ -186,82 +221,97 @@ void Ctags::writecols() {
     int writep = 0;
 
     cols* Col = cls;
-    while (startcols[writep] != '\0') {
-        wd[p] = startcols[writep]; p++; writep++;
+    if (Col) {
+        while (startcols[writep] != '\0') {
+            wd[p] = startcols[writep]; p++; writep++;
+        }
+        writep = 0;
+        while (Col) {
+            while (colstr[0][writep] != '\0') {
+                wd[p] = colstr[0][writep]; p++; writep++;
+            }writep = 0;
+            while (Col->min[writep] != '\0') {//min+head
+                wd[p] = Col->min[writep]; p++; writep++;
+            }writep = 0;
+            while (colstr[1][writep] != '\0') {
+                wd[p] = colstr[1][writep]; p++; writep++;
+            }writep = 0;
+            while (Col->max[writep] != '\0') {//max
+                wd[p] = Col->max[writep]; p++; writep++;
+            }writep = 0;
+            while (colstr[2][writep] != '\0') {
+                wd[p] = colstr[2][writep]; p++; writep++;
+            }writep = 0;
+            while (Col->width[writep] != '\0') {//width
+                wd[p] = Col->width[writep]; p++; writep++;
+            }writep = 0;
+            if (Col->style) {
+                while (colstr[3][writep] != '\0') {
+                    wd[p] = colstr[3][writep]; p++; writep++;
+                }writep = 0;
+                while (Col->style[writep] != '\0') {//style
+                    wd[p] = Col->style[writep]; p++; writep++;
+                }writep = 0;
+            }
+            if (Col->hidden) {
+                while (colstr[5][writep] != '\0') {
+                    wd[p] = colstr[5][writep]; p++; writep++;
+                }writep = 0;
+                while (Col->hidden[writep] != '\0') {//hidden
+                    wd[p] = Col->hidden[writep]; p++; writep++;
+                }writep = 0;
+            }
+            if (Col->bestffit) {
+                while (colstr[4][writep] != '\0') {
+                    wd[p] = colstr[4][writep]; p++; writep++;
+                }writep = 0;
+                while (Col->bestffit[writep] != '\0') {//hidden
+                    wd[p] = Col->bestffit[writep]; p++; writep++;
+                }writep = 0;
+            }
+            if (Col->customwidth) {
+                while (colstr[6][writep] != '\0') {
+                    wd[p] = colstr[6][writep]; p++; writep++;
+                }writep = 0;
+                while (Col->customwidth[writep] != '\0') {//hidden
+                    wd[p] = Col->customwidth[writep]; p++; writep++;
+                }writep = 0;
+            }
+            while (closetag[writep] != '\0') {
+                wd[p] = closetag[writep]; p++; writep++;
+            }writep = 0;
+            Col = Col->next;
+        }
+        while (endcols[writep] != '\0') {
+            wd[p] = endcols[writep]; p++; writep++;
+        }writep = 0;
     }
-    writep = 0;
-    while (Col) {
-        while (colstr[0][writep] != '\0') {
-            wd[p] = colstr[0][writep]; p++; writep++;
-        }writep = 0;
-        while (Col->min[writep] != '\0') {//min+head
-            wd[p] = Col->min[writep]; p++; writep++;
-        }writep = 0;
-        while (colstr[1][writep] != '\0') {
-            wd[p] = colstr[1][writep]; p++; writep++;
-        }writep = 0;
-        while (Col->max[writep] != '\0') {//max
-            wd[p] = Col->max[writep]; p++; writep++;
-        }writep = 0;
-        while (colstr[2][writep] != '\0') {
-            wd[p] = colstr[2][writep]; p++; writep++;
-        }writep = 0;
-        while (Col->width[writep] != '\0') {//width
-            wd[p] = Col->width[writep]; p++; writep++;
-        }writep = 0;
-        if (Col->style) {
-            while (colstr[3][writep] != '\0') {
-                wd[p] = colstr[3][writep]; p++; writep++;
-            }writep = 0;
-            while (Col->style[writep] != '\0') {//style
-                wd[p] = Col->style[writep]; p++; writep++;
-            }writep = 0;
-        }
-        if (Col->hidden) {
-            while (colstr[5][writep] != '\0') {
-                wd[p] = colstr[5][writep]; p++; writep++;
-            }writep = 0;
-            while (Col->hidden[writep] != '\0') {//hidden
-                wd[p] = Col->hidden[writep]; p++; writep++;
-            }writep = 0;
-        }
-        if (Col->bestffit) {
-            while (colstr[4][writep] != '\0') {
-                wd[p] = colstr[4][writep]; p++; writep++;
-            }writep = 0;
-            while (Col->bestffit[writep] != '\0') {//hidden
-                wd[p] = Col->bestffit[writep]; p++; writep++;
-            }writep = 0;
-        }
-        if (Col->customwidth) {
-            while (colstr[6][writep] != '\0') {
-                wd[p] = colstr[6][writep]; p++; writep++;
-            }writep = 0;
-            while (Col->customwidth[writep] != '\0') {//hidden
-                wd[p] = Col->customwidth[writep]; p++; writep++;
-            }writep = 0;
-        }
-        while (closetag[writep] != '\0') {
-            wd[p] = closetag[writep]; p++; writep++;
-        }writep = 0;
-        Col = Col->next;
-    }
-    while (endcols[writep] != '\0') {
-        wd[p] = endcols[writep]; p++; writep++;
-    }writep = 0;
+    
 }
 //selection pane書きこみ
 void Ctags::writeSelection() {
-    const char* selpane[] = { "<selection"," activeCell=\"","\" sqref=\"","</sheetView>","</sheetViews>", " pane=\"" };
+    const char* selpane[] = { "<selection"," activeCell=\"","\" sqref=\"","</sheetView>","</sheetViews>", " pane=\"" ,"<sheetViews>","<sheetView"};
+    const char* svvalue[] = { " zoomScaleNormal=\""," workbookViewId=\""," tabSelected=\""};
     const char* panes[] = { "<pane"," xSplit=\""," ySplit=\""," topLeftCell=\""," activePane=\""," state=\"" };
-    std::cout << "セレクション更新" << p << std::endl;
+    UINT8 clo = '>';
+    UINT8 sla[] = "/>";
 
     // <sheetview書き込み
-    while (dimtopane[writep] != '\0') {
-        wd[p] = dimtopane[writep]; p++; writep++;
-    }writep = 0;
+    oneStrwrite((UINT8*)selpane[6]);
+    if (ShV) {
+        oneStrwrite((UINT8*)selpane[7]);
+        if (ShV->zoomScaleNormal)
+            oneStrplusDoubleq((UINT8*)svvalue[0], ShV->zoomScaleNormal);
+        if (ShV->workbookViewId)
+            oneStrplusDoubleq((UINT8*)svvalue[1], ShV->workbookViewId);
+        if (ShV->tabSelected)
+            oneStrplusDoubleq((UINT8*)svvalue[2], ShV->tabSelected);
+        wd[p] = clo; p++;
+    }
+    else
+        oneStrwrite(sla);
 
-    Pane* Pa = Panes;
+    Pane* Pa = ShV->pan;
     // <pane 書き込み
     // <pane xSplit="176" ySplit="11" topLeftCell="HI75" activePane="bottomRight" state="frozen"/>
     while (Pa) {
@@ -319,7 +369,7 @@ void Ctags::writeSelection() {
         Pa = Pa->next;
     }
 
-    selection* Sel = sct;
+    selection* Sel = ShV->selec;
     // <selection 書き込み
     while (Sel) {
         while (selpane[0][writep] != '\0') {
@@ -358,13 +408,11 @@ void Ctags::writeSelection() {
         }writep = 0;
         Sel = Sel->next;
     }
+    if (ShV)
+        oneStrwrite((UINT8*)selpane[3]);// </sheetView>
 
-    while (selpane[3][writep] != '\0') {
-        wd[p] = selpane[3][writep]; p++; writep++;
-    }writep = 0;
-    while (selpane[4][writep] != '\0') {
-        wd[p] = selpane[4][writep]; p++; writep++;
-    }writep = 0;
+    oneStrwrite((UINT8*)selpane[4]);
+
     // <sheetFormatPr write
     while (sFPr[writep] != '\0') {
         wd[p] = sFPr[writep]; p++; writep++;
@@ -620,9 +668,35 @@ void Ctags::writefinal() {
     }writep = 0;
 }
 
-UINT8* Ctags::StrInit()
-{
-    UINT8* p = (UINT8*)malloc(1);
-    p = nullptr;
-    return p;
+void Ctags::oneStrplusDoubleq(UINT8* str, UINT8* v) {
+
+    int i = 0;
+    UINT8 d = '"';
+
+    while (str[i] != '\0') {
+        wd[p] = str[i];
+        i++;
+        p++;
+    }
+    i = 0;
+
+    while (v[i] != '\0') {
+        wd[p] = v[i];
+        i++; p++;
+    }
+
+    wd[p] = d;
+    p++;
+}
+
+//tag書き込み
+void Ctags::oneStrwrite(UINT8* str) {
+
+    int i = 0;
+
+    while (str[i] != '\0') {
+        wd[p] = str[i];
+        i++;
+        p++;
+    }
 }

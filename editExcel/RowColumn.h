@@ -21,7 +21,7 @@ public:
     const char* Ftag = "<f";
     const char* endFtag = "</f>";
     const char* Rowtag = "<row";
-    const char* sheetPr = "<sheetPr";//8
+    //const char* sheetPr = "<sheetPr";//8
     const char* sheetPrEnd = "</sheetPr>";//10
     const char* codename = "codeName=\"";//10
     const char* dement = "<dimension ref=\"";//16
@@ -56,6 +56,9 @@ public:
     const char* sheetend = "</sheetData>";//12
     const char* startSV = "<sheetView";//10
 
+    worksheetV* wsV = nullptr;
+    SheetViews* ShV = nullptr;
+    SheetPr* Pr = nullptr;
     Row* rows = nullptr;
     selection* sct = nullptr;
     demention* dm = nullptr;
@@ -88,21 +91,24 @@ public:
     int eRlen = 0;//diment
 
     void GetCtagValue();
-    void GetDiment();
     void GetSelectionPane();
 
+    selection* getselection(selection* se);
+
     void Getrow();
+    void readsheetviews();
     void GetSheetPr();
 
     void Getcols();
     void getcolv();
 
-    void getselection();
+    Pane* GetPane(Pane* pa);
 
     C* addCtable(C* c, UINT8* tv, UINT8* sv, UINT8* si, UINT32 col, UINT8* v, F* fv);
     cols* addcolatyle(cols* cs, UINT8* min, UINT8* max, UINT8* W, UINT8* sty, UINT8* hid, UINT8* bF, UINT8* cuW);
     cols* coltalloc();
     selection* SLTaddtable(selection* s, UINT8* pv, UINT8* av, UINT8* sv);
+    void GetDiment(UINT8* d);
     Row* addrows(Row* row, UINT32 r, UINT8* spanS, UINT8* spanE, UINT8* ht, UINT8* thickBot, UINT8* s, UINT8* customFormat, UINT8* customHeight, C* cell);
     Row* searchRow(Row* r, UINT32 newrow);
     Pane* addpanetable(Pane* p, UINT8* x, UINT8* y, UINT8* tl, UINT8* ap, UINT8* sta);
@@ -112,6 +118,9 @@ public:
     MargeCell* addmargecell(MargeCell* m, UINT8* s, UINT8* e);
 
     void getCtag();
+    void xmlheaderRead();
+    void readworksheet();
+    void readsheetPr();
     UINT8* getvalue();
     UINT8* getVorftag(const char* tag, UINT32 taglen, UINT32* size);
     UINT8* getSi(UINT8* v, UINT32 vl);
@@ -125,13 +134,13 @@ public:
     void panefree();
     void Ctableprint(C* c);
     void sheetread();
-    void GetPane();
 
     const char* closetag = "\"/>";
     int writep = 0;
 
     void addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F* f, UINT8* si);
     void writesheetdata();
+    void writeheadpart();
     void writecols();
     void writeDiment();
     void writeSelection();
@@ -139,5 +148,7 @@ public:
     void writec(C* ctag, UINT8* ROW);
     void writefinal();
 
-    UINT8* StrInit();
+    void oneStrplusDoubleq(UINT8* str, UINT8* v);
+
+    void oneStrwrite(UINT8* str);
 };
