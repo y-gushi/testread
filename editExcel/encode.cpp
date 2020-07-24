@@ -267,11 +267,8 @@ int encoding::compress(unsigned char* data, UINT64 dataleng) {
 
     size_t msiz = sizeof(UINT32) * (LEVEL + 2);
     s->milestock = (UINT32*)calloc(LEVEL + 2, sizeof(UINT32));
-    //memset(milestock, 0, sizeof(UINT32) * LEVEL);
     s->distancestock = (UINT32*)calloc(LEVEL + 2, sizeof(UINT32));
-    //memset(distancestock, 0, sizeof(UINT32) * LEVEL);
     s->mile_extension_stock = (UINT32*)calloc(LEVEL + 2, sizeof(UINT32));
-    //memset(mile_extension_stock, 0, sizeof(UINT32) * LEVEL);
     s->distance_extenshon_stock = (UINT32*)calloc(LEVEL + 2, sizeof(UINT32));
 
     if (!s->distance_extenshon_stock && !s->mile_extension_stock && !s->distancestock && s->milestock)
@@ -525,14 +522,13 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
     tcc = tc;
     lcc = lc;
 
-    UINT32 tnodesize = sizeof(tnode);
-    UINT32 ssize = tnodesize * (tc + 1);
-    UINT32 lsize = tnodesize * (lc + 1);
+    UINT32 ssize = (tc + 1);
+    UINT32 lsize = (lc + 1);
 
-    so = (tnode**)malloc(ssize);//ポインタ テーブル so[tc]　定義に変数使えない
-    sso = (tnode**)malloc(ssize);//ポインタ テーブル　各数値参照用　sso[tc]　定義に変数使えない
-    lev = (tnode**)malloc(lsize);//ポインタ テーブル（距離）lev[lc]　定義に変数使えない
-    llev = (tnode**)malloc(lsize);//ポインタ
+    so = (tnode**)malloc(sizeof(tnode*)*ssize);//ポインタ テーブル so[tc]　定義に変数使えない
+    sso = (tnode**)malloc(sizeof(tnode*) * ssize);//ポインタ テーブル　各数値参照用　sso[tc]　定義に変数使えない
+    lev = (tnode**)malloc(sizeof(tnode*) * lsize);//ポインタ テーブル（距離）lev[lc]　定義に変数使えない
+    llev = (tnode**)malloc(sizeof(tnode*) * lsize);//ポインタ
 
 
     //リテラル・長さテーブルをツリー配列に入れる
@@ -586,9 +582,9 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
 
     hccc = hcc;
 
-    UINT32 hsize = tnodesize * (hcc + 1);
-    huh = (tnode**)malloc(hsize);//ポインタ 符号の符号テーブル　huh[hcc]
-    huhc = (tnode**)malloc(hsize);//ポインタ 符号の符号テーブル　各数値参照用　huhc[hccc]
+    UINT32 hsize = hcc + 1;
+    huh = (tnode**)malloc(sizeof(tnode*) * hsize);//ポインタ 符号の符号テーブル　huh[hcc]
+    huhc = (tnode**)malloc(sizeof(tnode*) * hsize);//ポインタ 符号の符号テーブル　各数値参照用　huhc[hccc]
 
     struct tab* hhcc = nullptr;
     hhcc = hhc;//参照保存
@@ -601,8 +597,8 @@ void encoding::makeSign(slidewndow* s, deflate* defl) {
 
         hhc = hhcc;
         //std::cout << "符号符号　hhc : " << hcc << std::endl;
-        limstocksize = tnodesize * limit_stock_max;
-        defl->limithuffstock = (tnode**)malloc(limstocksize);
+        //limstocksize = tnodesize * limit_stock_max;
+        defl->limithuffstock = (tnode**)malloc(sizeof(tnode*)*limit_stock_max);
 
         while (hcc > 1) {//符号の符号の長さを決める
             defl->quicksort(huh, 0, hcc - 1);

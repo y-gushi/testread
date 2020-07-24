@@ -17,20 +17,32 @@ struct worksheetV {
     UINT8* uid;
 };
 
+struct sheetFPr {
+    UINT8* dRowH;
+    UINT8* dColW;
+    UINT8* dD;
+};
+
 struct SheetPr {
     UINT8* tint;
     UINT8* rgb;
+    UINT8* theme;
+    UINT8* filterMode;
     UINT8* fitToPage;
+    UINT8* transitionEvaluation;
 };
 //-----------------------
+//èåèïtÇ´èëéÆê›íË
 struct cfvo {
     UINT8* type;
     UINT8* val;
+    cfvo* next;
 };
 
 struct cfcolor {
     UINT8* rgb;
     UINT8* theme;
+    cfcolor* next;
 };
 
 struct cfRule {
@@ -41,6 +53,13 @@ struct cfRule {
     UINT8* formula;
     cfvo* vo;
     cfcolor* ccolor;
+    cfRule* next;
+};
+
+struct condiFormat {
+    UINT8* sqref;
+    cfRule* cfR;
+    condiFormat* next;
 };
 //------------------------
 struct Items {
@@ -96,6 +115,7 @@ struct cols {
     UINT8* hidden = nullptr;
     UINT8* bestffit = nullptr;
     UINT8* customwidth = nullptr;
+    cols* parrent;
     cols* next;
 };
 
@@ -137,7 +157,21 @@ struct SheetViews {
     UINT8* zoomScaleNormal;
     UINT8* workbookViewId;
     UINT8* tabSelected;
-    UINT8* workbookViewId;
     Pane* pan;
     selection* selec;
+};
+
+struct pagemargin {
+    UINT8* left;
+    UINT8* right;
+    UINT8* top;
+    UINT8* bottom;
+    UINT8* header;
+    UINT8* footer;
+};
+
+struct pagesetup {
+    UINT8* paperSize;
+    UINT8* orientation;
+    UINT8* rid;
 };

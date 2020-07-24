@@ -18,6 +18,7 @@
 #include "StyleWrite.h"
 #include <locale.h>
 #include "CheckStyle.h"
+#include "AppFile.h"
 
 #include <stdlib.h>
 #include <crtdbg.h>
@@ -109,7 +110,7 @@ int main(char* fname[], int i) {
 
     char Zfn[] = "C:/Users/ryo19/OneDrive/デスクトップ/excelfiles/【1 在庫状況】.xlsx";
     char PLfile[] = "C:/Users/ryo19/OneDrive/デスクトップ/excelfiles/LY200212-SHIP ゾゾ.xlsx"; //テスト書き出し
-    char mfile[] = "C:/Users/ryo19/OneDrive/デスクトップ/teststyle.xml"; //テスト書き出し
+    char mfile[] = "C:/Users/ryo19/OneDrive/デスクトップ/testapp.xml"; //テスト書き出し
     char recd[] = "C:/Users/ryo19/OneDrive/デスクトップ/Centraldata"; //テスト書き出し
     char wridata[] = "C:/Users/ryo19/OneDrive/デスクトップ/xmls/";
 
@@ -256,15 +257,6 @@ int main(char* fname[], int i) {
     //シェアーデータ書き込み
     hattyushare->siwrite();
 
-    FILE* f = nullptr;
-    fopen_s(&f, mfile, "wb");
-    if (!f)
-        printf("ファイルを開けませんでした");
-
-    for (UINT64 i = 0; i < hattyushare->wlen; i++)
-        fwrite(&hattyushare->wd[i], sizeof(char), 1, f);
-    fclose(f);
-
     //sharedata = hattyushare->writeshare((UINT8*)inMainstr, strlen(inMainstr), inFourstr, inThreestr, inTwostr, inSubstr);//share文字列書き込み share data更新
     UINT64 shrelength = hattyushare->writeleng;
     free(sharedata);//書き込みデータ解放
@@ -328,6 +320,7 @@ int main(char* fname[], int i) {
     DeflateDecode* Hdeco=nullptr;
 
     char sheet[] = "worksheets/sheet";
+    char appfile[] = "docProps/app.xml";
 
     bool t = false;
     Ctags* mh=nullptr;//発注到着　cell データ読み込み
@@ -342,10 +335,10 @@ int main(char* fname[], int i) {
     MatchColrs* matchs = nullptr;
     MatchColrs* matchsroot = nullptr;
     char teststyl[] = "200";//test用
-    /*
+    
     while (hHinfo->filenum < hHinfo->ER->centralsum) {
         //ファイル名 sheet 部分一致検索
-        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, sheet, &Zr);
+        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, appfile, &Zr);
 
         if (cddata) {
             std::cout << "sheet一致ファイルネーム：" << cddata->filename<<" "<< cddata->nonsize << std::endl;
@@ -355,9 +348,24 @@ int main(char* fname[], int i) {
 
             Hdeco = new DeflateDecode(&Zr);//解凍
             Hdeco->dataread(hHinfo->LH->pos, cddata->nonsize);//解凍　データ読み込み
-            mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, hattyushare);//シートデータ読み込み
-            mh->sheetread();
-                        
+
+            App_File ap(Hdeco->ReadV, Hdeco->readlen);
+            ap.readappfile();
+            ap.writeappfile();
+
+            FILE* f = nullptr;
+            fopen_s(&f, mfile, "wb");
+            if (!f)
+                printf("ファイルを開けませんでした");
+
+            for (UINT64 i = 0; i < ap.wl; i++)
+                fwrite(&ap.wd[i], sizeof(char), 1, f);
+            fclose(f);
+
+    
+            //mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, hattyushare);//シートデータ読み込み
+            //mh->sheetread();
+              /*
             sI = new searchItemNum(mh);
             t = sI->searchitemNumber(hattyushare->uniqstr, hattyushare->inputsinum[3], hattyushare->inputsinum[2], hattyushare->inputsinum[1], hattyushare->inputsinum[0], (char*)styleset, teststyl,sg->its);
             if (t) {
@@ -370,7 +378,8 @@ int main(char* fname[], int i) {
                 enc->compress(mh->wd, mh->p);//データ圧縮
                 delete enc;                
             }
-            delete mh;
+            */
+            //delete mh;
             delete Hdeco;//デコードデータ　削除
             delete sI;
             
@@ -379,7 +388,7 @@ int main(char* fname[], int i) {
         hHinfo->freeheader();
     }
     std::cout << "end item search" << std::endl;
-    */
+    
 
     delete hHinfo;
     sg->freeits();

@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="appwrite.cpp" />
     <ClCompile Include="bitInOut.cpp" />
     <ClCompile Include="ChangeArrayNumber.cpp" />
     <ClCompile Include="CRC.cpp" />
@@ -150,6 +151,7 @@
     <ClCompile Include="headerread.cpp" />
     <ClCompile Include="headerwrite.cpp" />
     <ClCompile Include="PLread.cpp" />
+    <ClCompile Include="readapp.cpp" />
     <ClCompile Include="RowColumn.cpp" />
     <ClCompile Include="SearchItemNUm.cpp" />
     <ClCompile Include="shareRandW.cpp" />
@@ -160,10 +162,12 @@
     <ClCompile Include="timeget.cpp" />
     <ClCompile Include="UINTtoshiftJIS.cpp" />
     <ClCompile Include="unitchange.cpp" />
+    <ClCompile Include="workbookEdit.cpp" />
     <ClCompile Include="writeshare.cpp" />
     <ClCompile Include="ZipFilewrite.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AppFile.h" />
     <ClInclude Include="bitInOut.h" />
     <ClInclude Include="ChangeArrayNumber.h" />
     <ClInclude Include="CheckStyle.h" />
@@ -188,6 +192,7 @@
     <ClInclude Include="timeget.h" />
     <ClInclude Include="typechange.h" />
     <ClInclude Include="unitchange.h" />
+    <ClInclude Include="workbookEdit.h" />
     <ClInclude Include="ZipFilewrite.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

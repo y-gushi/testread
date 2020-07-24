@@ -26,7 +26,7 @@ public:
     const char* codename = "codeName=\"";//10
     const char* dement = "<dimension ref=\"";//16
     const char* pane = "<pane";//5
-    const char* Coltag = "<col ";//5
+
     const char* endtag = "</cols>";//7
     const char* slashend = "/>";//2
 
@@ -54,7 +54,6 @@ public:
     const char* Ft = "t=\"";
 
     const char* sheetend = "</sheetData>";//12
-    const char* startSV = "<sheetView";//10
 
     worksheetV* wsV = nullptr;
     SheetViews* ShV = nullptr;
@@ -64,18 +63,20 @@ public:
     demention* dm = nullptr;
     cols* cls = nullptr;
     Pane* Panes = nullptr;
+    sheetFPr* sfopr = nullptr;
+    condiFormat* condF = nullptr;
+    pagemargin* pmargin = nullptr;
+    pagesetup* pasetup = nullptr;
+    UINT8* phoneticPr_fontId = nullptr;
+    UINT8* drawing_id = nullptr;
 
     UINT64 p = 0;
-    UINT8* fstr = nullptr;
 
-    UINT8* headXML = nullptr;
-    UINT8* dimtopane = nullptr;
     UINT8* sFPr = nullptr;
     UINT8* margeCellCount = nullptr;
     UINT32 margeCellNum = 0;
 
     MargeCell* margeCellRoot = nullptr;
-    UINT8* MC;
 
     UINT8* data;
     UINT8* wd;
@@ -91,28 +92,53 @@ public:
     int eRlen = 0;//diment
 
     void GetCtagValue();
-    void GetSelectionPane();
 
-    selection* getselection(selection* se);
+    selection* getselection(selection* seLe);
 
     void Getrow();
-    void readsheetviews();
+    void readsvValues();
+
+    void freesheetviews();
+    void GetSheetViews();
+    void readsheetView();
     void GetSheetPr();
 
     void Getcols();
+    cols* addcolatyle(cols* cs, cols* csP, UINT8* min, UINT8* max, UINT8* W, UINT8* sty, UINT8* hid, UINT8* bF, UINT8* cuW);
+    condiFormat* addcondiFormat(condiFormat* cf, UINT8* sq, cfRule* cr);
+    cfvo* readcfvo(cfvo* cv);
     void getcolv();
+
+    void getsheetFormatPr();
+
+    void freesheetFormatPr();
 
     Pane* GetPane(Pane* pa);
 
     C* addCtable(C* c, UINT8* tv, UINT8* sv, UINT8* si, UINT32 col, UINT8* v, F* fv);
-    cols* addcolatyle(cols* cs, UINT8* min, UINT8* max, UINT8* W, UINT8* sty, UINT8* hid, UINT8* bF, UINT8* cuW);
-    cols* coltalloc();
+
     selection* SLTaddtable(selection* s, UINT8* pv, UINT8* av, UINT8* sv);
     void GetDiment(UINT8* d);
     Row* addrows(Row* row, UINT32 r, UINT8* spanS, UINT8* spanE, UINT8* ht, UINT8* thickBot, UINT8* s, UINT8* customFormat, UINT8* customHeight, C* cell);
     Row* searchRow(Row* r, UINT32 newrow);
     Pane* addpanetable(Pane* p, UINT8* x, UINT8* y, UINT8* tl, UINT8* ap, UINT8* sta);
     F* getFtag();
+    cfcolor* readcfcol(cfcolor* cco);
+    cfRule* addcfRule(cfRule* cr, UINT8* t, UINT8* dx, UINT8* pri, UINT8* op, UINT8* fo, cfvo* cf, cfcolor* cc);
+    cfRule* readcfRule(cfRule* cfr);
+    UINT8* readformula();
+    void readconditional();
+    void freeconditional();
+    void freecfr(cfRule* c);
+
+    void freeVo(cfvo* cf);
+
+    void freecfcolor(cfcolor* c);
+
+    void readPageSetup();
+    void freepagesetup();
+    void readPageMargin();
+    void freepagemargin();
     void getfinalstr();
 
     MargeCell* addmargecell(MargeCell* m, UINT8* s, UINT8* e);
@@ -120,19 +146,25 @@ public:
     void getCtag();
     void xmlheaderRead();
     void readworksheet();
+    void freeheadxms();
     void readsheetPr();
+    void freePr();
     UINT8* getvalue();
     UINT8* getVorftag(const char* tag, UINT32 taglen, UINT32* size);
     UINT8* getSi(UINT8* v, UINT32 vl);
 
     void getMargeCell();
 
+    void freemarge();
+
+    UINT8** splitref(UINT8* s);
+
     void Ctablefree(C* c);
     void Rowtablefree();
     void selectfree();
     void colfree();
     void panefree();
-    void Ctableprint(C* c);
+
     void sheetread();
 
     const char* closetag = "\"/>";
@@ -140,7 +172,7 @@ public:
 
     void addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F* f, UINT8* si);
     void writesheetdata();
-    void writeheadpart();
+    UINT8* writeheadpart();
     void writecols();
     void writeDiment();
     void writeSelection();

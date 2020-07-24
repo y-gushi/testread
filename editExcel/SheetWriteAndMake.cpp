@@ -24,13 +24,14 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
 
     ro = searchRow(rows, rn);//row位置検索
     if (!ro) {
-        //std::cout << "row なし 追加" << std::endl;
+        //row追加
         int cnpl = 0;//桁数　使わない
 
         UINT32 newcn = NA.ColumnCharnumtoNumber(cn);//列番号連番へ　入れた列
         UINT8* charcn = NA.InttoChar(newcn, &cnpl);//intを配列へ
 
         size_t spsiz = cnpl + 1;
+
         UINT8* spanSt = (UINT8*)malloc(spsiz);//行スタート位置
         strcpy_s((char*)spanSt, spsiz, (char*)charcn);
 
@@ -47,8 +48,9 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
         UINT8 CH[] = "1";//customhigh
         UINT8* cH = (UINT8*)malloc(2);
         strcpy_s((char*)cH, 2, (const char*)CH);
-        rows = addrows(rows, rn, spanSt, spanEn, hT, thick, rs, CF, cH, nullptr);
+        C* newC = nullptr;
 
+        rows = addrows(rows, rn, spanSt, spanEn, hT, thick, rs, CF, cH, newC);
         ro = searchRow(rows, rn);
 
         //cell null データ入れる
@@ -56,19 +58,23 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
         //incolnum = NA.NumbertoArray(colnum_start);//数字を文字数時に
         ro->cells = addCtable(ro->cells, t, s, si, cn, v, f);
     }
-    else {
+    else {//前にcell詰める　入れるセル多いとメモリオーバーする場合あり
         //rowあり
         //std::cout << " row あり　追加 v : " << v << std::endl;
 
         //入れるcellの前がなければ入れる
+        /*
         C* Croot = ro->cells;
-        while (Croot->next) {
-            Croot = Croot->next;
+        UINT32 incolnum = 'A';//セルデータのない時
+        if (Croot) {
+            while (Croot->next)
+                Croot = Croot->next;
+            incolnum = Croot->col;//現在の最終行
+            NA.ColumnIncliment(&incolnum);
         }
-
-        UINT32 incolnum = Croot->col;//現在の最終行
-        NA.ColumnIncliment(&incolnum);
-
+        */
+        ro->cells = addCtable(ro->cells, t, s, si, cn, v, f);
+        /*
         while (incolnum <= cn) {
             if (incolnum == cn) {
                 //std::cout << " セル追加 前あり　row : " << ro->r << " 行 " << incolnum << std::endl;
@@ -89,6 +95,7 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
             NA.ColumnIncliment(&incolnum);
             //colnum_start++;
         }
+        */
     }
 
     //ro->cells = addCtable(ro->cells, t, s, si, cn, v, f);//セル情報検索
@@ -104,7 +111,14 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
         UINT32 ncn = NA.RowArraytoNum(ncols->max, j);//最終max文字列 数字に変換
         if (cn > ncn) {//cols max 小さい
             UINT8 wi[] = "9"; UINT8 styl[] = "1";
-            size_t colmemsiz = strlen((const char*)col)+1;
+
+            UINT8* wid = (UINT8*)malloc(2);
+            strcpy_s((char*)wid, 2, (const char*)wi);
+
+            UINT8* STy = (UINT8*)malloc(2);
+            strcpy_s((char*)STy, 2, (const char*)styl);
+
+            size_t colmemsiz = strlen((const char*)col) + 1;
             UINT8* mincol = (UINT8*)malloc(colmemsiz);
             strcpy_s((char*)mincol, colmemsiz, (const char*)col);
 
@@ -115,10 +129,9 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
             UINT8* Bf = nullptr;
             UINT8* Cuw = nullptr;
 
-            cls = addcolatyle(cls, mincol, maxcol, wi, styl, Hi, Bf, Cuw);//cols 追加
+            cls = addcolatyle(cls, nullptr, mincol, maxcol, wi, styl, Hi, Bf, Cuw);//cols 追加
         }
     }
-
     rp = 0;//桁数
     while (ro->spanE[rp] != '\0')
         rp++;
@@ -134,82 +147,102 @@ void Ctags::writesheetdata() {
     size_t msize = size_t(dlen) + 6000;
 
     wd = (UINT8*)malloc(msize);//メモリサイズ変更　書き込み用
-    //std::cout << "データ更新" << p << std::endl;
+
     p = 0;
 
-    if (wd) {
-        while (headXML[p] != '\0') {
-            wd[p] = headXML[p];
-            p++;
-        }
-    }
     writeheadpart();
     writeDiment();
     writeSelection();
     writecols();
     writecells();
     writefinal();
-
-    //std::cout << "size : " << p << " dlen : " << dlen << std::endl;
 }
 
-void Ctags::writeheadpart() {
-    const char* shpr[] = { "<sheetPr>","<tabColor","rgb=\""," tint=\"","<pageSetUpPr"," fitToPage=\"","</sheetPr>" };
+UINT8* Ctags::writeheadpart() {
+    const char* workstat[] = { "<worksheet"," xmlns=\"" ," xmlns:r=\"" ," xmlns:mc=\"" ," xmlns:x14ac=\"" ,
+        " xmlns:xr=\"" ," xmlns:xr2=\"" ," xmlns:xr3=\"" ," mc:Ignorable=\""," xr:uid=\"" };
+    const char* shpr[] = { "<sheetPr","<tabColor"," rgb=\""," tint=\"","<pageSetUpPr"," fitToPage=\"","</sheetPr>"," filterMode=\""," theme=\"","transitionEvaluation=\"" };
     UINT8 clo = '>';
     UINT8 sla[] = "/>";
 
-    // <sheetPr write
-    oneStrwrite((UINT8*)shpr[0]);
-    if (Pr) {
-        oneStrwrite((UINT8*)shpr[1]);
-        if (Pr->rgb)
-            oneStrplusDoubleq((UINT8*)shpr[2], Pr->rgb);
-        if (Pr->tint)
-            oneStrplusDoubleq((UINT8*)shpr[3], Pr->tint);
-        oneStrwrite(sla);
+    if (!wsV)
+        return nullptr;
+    //worbook start str
+    oneStrwrite((UINT8*)workstat[0]);
+    oneStrplusDoubleq((UINT8*)workstat[1], wsV->xmlns);
+    oneStrplusDoubleq((UINT8*)workstat[2], wsV->r);
+    oneStrplusDoubleq((UINT8*)workstat[3], wsV->mc);
+    oneStrplusDoubleq((UINT8*)workstat[4], wsV->x14ac);
+    oneStrplusDoubleq((UINT8*)workstat[5], wsV->xr);
+    oneStrplusDoubleq((UINT8*)workstat[6], wsV->xr2);
+    oneStrplusDoubleq((UINT8*)workstat[7], wsV->xr3);
+    oneStrplusDoubleq((UINT8*)workstat[8], wsV->Ignorable);
+    oneStrplusDoubleq((UINT8*)workstat[9], wsV->uid);
+    wd[p] = clo; p++;
 
-        if (Pr->fitToPage) {
-            oneStrwrite((UINT8*)shpr[4]);
-            oneStrplusDoubleq((UINT8*)shpr[2], Pr->fitToPage);
+    // <sheetPr write
+    if (Pr) {
+        oneStrwrite((UINT8*)shpr[0]);
+        if (Pr->filterMode)
+            oneStrplusDoubleq((UINT8*)shpr[7], Pr->filterMode);
+        if (Pr->transitionEvaluation)
+            oneStrplusDoubleq((UINT8*)shpr[8], Pr->transitionEvaluation);
+
+        if (Pr->rgb || Pr->theme || Pr->tint || Pr->fitToPage) {
+            wd[p] = clo; p++;
+
+            if (Pr->rgb || Pr->theme || Pr->tint) {
+                oneStrwrite((UINT8*)shpr[1]);
+                if (Pr->rgb)
+                    oneStrplusDoubleq((UINT8*)shpr[2], Pr->rgb);
+                if (Pr->theme)
+                    oneStrplusDoubleq((UINT8*)shpr[8], Pr->theme);
+                if (Pr->tint)
+                    oneStrplusDoubleq((UINT8*)shpr[3], Pr->tint);
+                oneStrwrite(sla);
+            }
+
+            if (Pr->fitToPage) {
+                oneStrwrite((UINT8*)shpr[4]);
+                oneStrplusDoubleq((UINT8*)shpr[4], Pr->fitToPage);
+                oneStrwrite(sla);
+            }
+
+            oneStrwrite((UINT8*)shpr[6]);
+        }
+        else {
             oneStrwrite(sla);
         }
     }
-    oneStrwrite((UINT8*)shpr[6]);
+    return nullptr;
 }
 
 //diment書き込み
 void Ctags::writeDiment() {
     const char* dimstart = "<dimension ref=\"";
+    UINT8 clt[] = "/>";
     //std::cout << "ディメント更新" << p << std::endl;
     if (dm) {
-        while (dimstart[writep] != '\0') {
-            wd[p] = dimstart[writep]; p++; writep++;
-        }writep = 0;
+        oneStrwrite((UINT8*)dimstart);
         if (dm->sC) {
-            while (dm->sC[writep] != '\0') {//スタート列
-                wd[p] = dm->sC[writep]; p++; writep++;
-            }writep = 0;
+            oneStrwrite(dm->sC);
         }
         if (dm->sR) {
-            while (dm->sR[writep] != '\0') {//スタート行
-                wd[p] = dm->sR[writep]; p++; writep++;
-            }writep = 0;
+            oneStrwrite(dm->sR);
         }
-        wd[p] = ':'; p++;
+
         if (dm->eC) {
-            while (dm->eC[writep] != '\0') {//終了列
-                wd[p] = dm->eC[writep]; p++; writep++;
-            }writep = 0;
+            wd[p] = ':'; p++;
+            oneStrwrite(dm->eC);//終了列
         }
         if (dm->eR) {
-            while (dm->eR[writep] != '\0') {//終了行
-                wd[p] = dm->eR[writep]; p++; writep++;
-            }writep = 0;
+            oneStrwrite(dm->eR);//終了行
         }
+        wd[p] = '"'; p++;
+        oneStrwrite(clt);
     }
-    
-    //std::cout << "ディメント更新" << dm->eC << std::endl;
 }
+
 //cols書き込み
 void Ctags::writecols() {
     const char* startcols = "<cols>";
@@ -286,13 +319,15 @@ void Ctags::writecols() {
             wd[p] = endcols[writep]; p++; writep++;
         }writep = 0;
     }
-    
+
 }
 //selection pane書きこみ
 void Ctags::writeSelection() {
-    const char* selpane[] = { "<selection"," activeCell=\"","\" sqref=\"","</sheetView>","</sheetViews>", " pane=\"" ,"<sheetViews>","<sheetView"};
-    const char* svvalue[] = { " zoomScaleNormal=\""," workbookViewId=\""," tabSelected=\""};
+    const char* selpane[] = { "<selection"," activeCell=\"","\" sqref=\"","</sheetView>","</sheetViews>", " pane=\"" ,"<sheetViews>","<sheetView" };
+    const char* svvalue[] = { " zoomScaleNormal=\""," workbookViewId=\""," tabSelected=\"" };
     const char* panes[] = { "<pane"," xSplit=\""," ySplit=\""," topLeftCell=\""," activePane=\""," state=\"" };
+    const char* shfprs[] = { "<sheetFormatPr"," defaultColWidth=\""," defaultRowHeight=\""," x14ac:dyDescent=\"" };
+
     UINT8 clo = '>';
     UINT8 sla[] = "/>";
 
@@ -414,20 +449,25 @@ void Ctags::writeSelection() {
     oneStrwrite((UINT8*)selpane[4]);
 
     // <sheetFormatPr write
-    while (sFPr[writep] != '\0') {
-        wd[p] = sFPr[writep]; p++; writep++;
-    }writep = 0;
+    if (sfopr) {
+        oneStrwrite((UINT8*)shfprs[0]);
+        if (sfopr->dColW)
+            oneStrplusDoubleq((UINT8*)shfprs[1], sfopr->dColW);
+        if (sfopr->dRowH)
+            oneStrplusDoubleq((UINT8*)shfprs[2], sfopr->dRowH);
+        if (sfopr->dD)
+            oneStrplusDoubleq((UINT8*)shfprs[3], sfopr->dD);
+        oneStrwrite(sla);
+    }
 }
 //セルデータ書き込み
 void Ctags::writecells() {
     const char* sheetstart = "<sheetData>";
+    const char* nondata = "<sheetData/>";
     const char* shend = "</sheetData>";
     std::cout << "セル更新" << p << std::endl;
 
     int Place = 0;
-    while (sheetstart[writep] != '\0') {
-        wd[p] = sheetstart[writep]; p++; writep++;
-    }writep = 0;
 
     const char* rstart = "<row r=\"";
     const char* rspa = "\" spans=\"";
@@ -440,6 +480,13 @@ void Ctags::writecells() {
     const char* Rend = "</row>";
 
     Row* Ro = rows;
+
+    if (Ro)
+        oneStrwrite((UINT8*)sheetstart);
+    else
+    {
+        oneStrwrite((UINT8*)nondata);
+    }
 
     while (Ro) {
         while (rstart[writep] != '\0') {
@@ -517,9 +564,8 @@ void Ctags::writecells() {
 
         Ro = Ro->next;
     }
-    while (shend[writep] != '\0') {
-        wd[p] = shend[writep]; p++; writep++;
-    }writep = 0;
+    if (rows)
+        oneStrwrite((UINT8*)shend);
 }
 // cタグ　書き込み
 void Ctags::writec(C* ctag, UINT8* ROW) {
@@ -663,9 +709,150 @@ void Ctags::writec(C* ctag, UINT8* ROW) {
 }
 //最終文字列書き込み
 void Ctags::writefinal() {
-    while (fstr[writep] != '\0') {// /v
-        wd[p] = fstr[writep]; p++; writep++;
-    }writep = 0;
+    const char* fstr[] = { "<phoneticPr"," fontId=\"","<conditionalFormatting"," sqref=\"","<cfRule"," type=\""," dxfId=\""," priority=\""," operator=\"",
+        "</cfRule>","</conditionalFormatting>" };
+    const char* colsca[] = { "<colorScale>","<cfvo"," type=\""," val=\"","<color"," rgb=\""," theme=\"","</colorScale>","<formula>","</formula>" };
+    const char* pma[] = { "<pageMargins"," left=\""," right=\""," top=\""," bottom=\""," header=\""," footer=\"" };
+    const char* psu[] = { "<pageSetup"," paperSize=\""," orientation=\""," r:id=\"" ,"<drawing"," r:id=\"" };
+    const char* margstr[] = { "<mergeCells"," count=\"","<mergeCell"," ref=\"","</mergeCells>" };
+
+    const char* closebook = "</worksheet>";
+    UINT8 clo = '>';
+    UINT8 colon = ':';
+    UINT8 sla[] = "/>";
+
+    MargeCell* mr = margeCellRoot;
+    condiFormat* cfr = condF;
+
+    //margin write
+    if (mr) {
+        oneStrwrite((UINT8*)margstr[0]);
+        oneStrplusDoubleq((UINT8*)margstr[1], margeCellCount);
+        wd[p] = clo; p++;
+        while (mr) {
+            oneStrwrite((UINT8*)margstr[2]);
+            oneStrwrite((UINT8*)margstr[3]);
+            oneStrwrite(mr->scell);
+            wd[p] = colon; p++;
+            oneStrwrite(mr->ecell);
+            wd[p] = '"'; p++;
+            oneStrwrite(sla);
+
+            mr = mr->next;
+        }
+        oneStrwrite((UINT8*)margstr[4]);
+    }
+    //phoneticPr write
+    if (phoneticPr_fontId) {
+        oneStrwrite((UINT8*)fstr[0]);
+        oneStrplusDoubleq((UINT8*)fstr[1], phoneticPr_fontId);
+        oneStrwrite(sla);
+    }
+    //conditionalFormatting write
+    if (cfr) {
+        while (cfr) {
+            oneStrwrite((UINT8*)fstr[2]);
+            if (cfr->sqref)
+                oneStrplusDoubleq((UINT8*)fstr[3], cfr->sqref);
+            wd[p] = clo; p++;
+            if (cfr->cfR) {
+                while (cfr->cfR) {
+                    //cfr start write
+                    oneStrwrite((UINT8*)fstr[4]);
+                    if (cfr->cfR->type)
+                        oneStrplusDoubleq((UINT8*)fstr[5], cfr->cfR->type);
+                    if (cfr->cfR->dxfId)
+                        oneStrplusDoubleq((UINT8*)fstr[6], cfr->cfR->dxfId);
+                    if (cfr->cfR->priority)
+                        oneStrplusDoubleq((UINT8*)fstr[7], cfr->cfR->priority);
+                    if (cfr->cfR->opara)
+                        oneStrplusDoubleq((UINT8*)fstr[8], cfr->cfR->opara);
+                    wd[p] = clo; p++;
+
+                    if (cfr->cfR->vo || cfr->cfR->ccolor) {
+                        oneStrwrite((UINT8*)colsca[0]);
+                        if (cfr->cfR->vo) {
+                            //cfvo
+                            while (cfr->cfR->vo) {
+                                oneStrwrite((UINT8*)colsca[1]);
+                                if (cfr->cfR->vo->type)
+                                    oneStrplusDoubleq((UINT8*)colsca[2], cfr->cfR->vo->type);
+                                if (cfr->cfR->vo->val)
+                                    oneStrplusDoubleq((UINT8*)colsca[3], cfr->cfR->vo->val);
+                                oneStrwrite(sla);
+
+                                cfr->cfR->vo = cfr->cfR->vo->next;
+                            }
+                        }
+                        if (cfr->cfR->ccolor) {
+                            //color
+                            while (cfr->cfR->ccolor)
+                            {
+                                oneStrwrite((UINT8*)colsca[4]);
+                                if (cfr->cfR->ccolor->rgb)
+                                    oneStrplusDoubleq((UINT8*)colsca[5], cfr->cfR->ccolor->rgb);
+                                if (cfr->cfR->ccolor->theme)
+                                    oneStrplusDoubleq((UINT8*)colsca[6], cfr->cfR->ccolor->theme);
+                                oneStrwrite(sla);
+
+                                cfr->cfR->ccolor = cfr->cfR->ccolor->next;
+                            }
+                        }
+                        oneStrwrite((UINT8*)colsca[7]);
+                    }
+                    //fomura write
+                    if (cfr->cfR->formula) {
+                        oneStrwrite((UINT8*)colsca[8]);
+                        oneStrwrite(cfr->cfR->formula);
+                        oneStrwrite((UINT8*)colsca[9]);
+                    }
+
+                    oneStrwrite((UINT8*)fstr[9]);
+
+                    cfr->cfR = cfr->cfR->next;
+                }
+            }
+            oneStrwrite((UINT8*)fstr[10]);
+            cfr = cfr->next;
+        }
+
+    }
+    //pagemargin write
+    if (pmargin) {
+        oneStrwrite((UINT8*)pma[0]);
+        if (pmargin->left)
+            oneStrplusDoubleq((UINT8*)pma[1], pmargin->left);
+        if (pmargin->right)
+            oneStrplusDoubleq((UINT8*)pma[2], pmargin->right);
+        if (pmargin->top)
+            oneStrplusDoubleq((UINT8*)pma[3], pmargin->top);
+        if (pmargin->bottom)
+            oneStrplusDoubleq((UINT8*)pma[4], pmargin->bottom);
+        if (pmargin->header)
+            oneStrplusDoubleq((UINT8*)pma[5], pmargin->header);
+        if (pmargin->footer)
+            oneStrplusDoubleq((UINT8*)pma[6], pmargin->footer);
+        oneStrwrite(sla);
+    }
+    //pagesetup write
+    if (pasetup) {
+        oneStrwrite((UINT8*)psu[0]);
+        if (pasetup->paperSize)
+            oneStrplusDoubleq((UINT8*)psu[1], pasetup->paperSize);
+        if (pasetup->orientation)
+            oneStrplusDoubleq((UINT8*)psu[2], pasetup->orientation);
+        if (pasetup->rid)
+            oneStrplusDoubleq((UINT8*)psu[3], pasetup->rid);
+        oneStrwrite(sla);
+    }
+    //drawing
+    if (drawing_id) {
+        oneStrwrite((UINT8*)psu[4]);
+        oneStrplusDoubleq((UINT8*)psu[5], drawing_id);
+        oneStrwrite(sla);
+    }
+    //close worksheet
+    oneStrwrite((UINT8*)closebook);
 }
 
 void Ctags::oneStrplusDoubleq(UINT8* str, UINT8* v) {
