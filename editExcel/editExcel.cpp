@@ -24,6 +24,7 @@
 #include "workbookEdit.h"
 #include "Content_Type_edit.h"
 #include "workbook_rel_edi.h"
+#include "draw_edit.h"
 
 #include <stdlib.h>
 #include <crtdbg.h>
@@ -358,10 +359,11 @@ int main(char* fname[], int i) {
             Hdeco = new DeflateDecode(&Zr);//解凍
             Hdeco->dataread(hHinfo->LH->pos, cddata->nonsize);//解凍　データ読み込み
 
-            workb_rels ap(Hdeco->ReadV, Hdeco->readlen);
-            ap.readwbrels();
-            ap.writewbrel();
-
+            DrawEdit ap(Hdeco->ReadV, Hdeco->readlen);
+            ap.readdraw();
+            
+            ap.drawWrite();
+            
             FILE* f = nullptr;
             fopen_s(&f, mfile, "wb");
             if (!f)
@@ -370,7 +372,7 @@ int main(char* fname[], int i) {
             for (UINT64 i = 0; i < ap.wl; i++)
                 fwrite(&ap.wd[i], sizeof(char), 1, f);
             fclose(f);
-
+            
     
             //mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, hattyushare);//シートデータ読み込み
             //mh->sheetread();
@@ -390,7 +392,7 @@ int main(char* fname[], int i) {
             */
             //delete mh;
             delete Hdeco;//デコードデータ　削除
-            delete sI;
+            //delete sI;
             
             hHinfo->freeLH();
         }

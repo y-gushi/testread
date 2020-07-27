@@ -4,24 +4,31 @@ DrawEdit::DrawEdit(UINT8* data, UINT32 datalen)
 {
 	d = data;
 	dl = datalen;
+	wd = nullptr;
+	wl = 0;
 	p = 0;
 	stocklen = 0;
 	Anroot = nullptr;
 	tstr = nullptr;
+	x_xdr = nullptr;
+	x_a = nullptr;
 }
 
 DrawEdit::~DrawEdit()
 {
 	free(tstr);
+	freeAnchor();
+	free(x_xdr);
+	free(x_a);
 }
 
 void DrawEdit::readdraw()
 {
 	const char* heads[] = { "<xdr:wsDr","<xdr:oneCellAnchor>","</xdr:wsDr>" };//9 19 11
 
-	UINT8 one[15] = { 0 };
+	UINT8 one[10] = { 0 };
 	UINT8 two[20] = { 0 };
-	UINT8 thr[17] = { 0 };
+	UINT8 thr[12] = { 0 };
 
 	int res = 0;
 	while (d[p] != '>')
@@ -36,16 +43,59 @@ void DrawEdit::readdraw()
 
 	do
 	{
+		for (int i = 0; i < 8; i++) {
+			one[i] = one[i + 1];
+		}
+		one[8] = d[p]; p++;
+
+		res = strncmp((char*)one, heads[0], 9);
+		if (res == 0)
+			read_xdr_wsDr();
+
+	} while (res!=0);
+
+	do
+	{
 		for (int i = 0; i < 18; i++) {
 			two[i] = two[i + 1];
+			if(i<10)
+				thr[i] = thr[i + 1];
 		}
-		two[18] = d[p]; p++;
+		thr[10] = two[18] = d[p]; p++;
 
-		res = strncmp((char*)one, heads[1], 19);
+		res = strncmp((char*)two, heads[1], 19);
 		if (res == 0)
 			readoneAnchor();
 
+		res = strncmp((char*)thr, heads[2], 11);
+
 	} while (res != 0);
+}
+
+void DrawEdit::read_xdr_wsDr() {
+	const char* xm[] = { "xmlns:xdr=\"","xmlns:a=\"" };//11 9
+
+	UINT8 one[12] = { 0 };
+	UINT8 two[10] = { 0 };
+
+	int res = 0;
+
+	while (d[p] != '>') {
+		for (int i = 0; i < 10; i++) {
+			one[i] = one[i + 1];
+			if (i < 8)
+				two[i] = two[i + 1];
+		}
+		one[10] = two[8] = d[p]; p++;
+
+		res = strncmp((char*)one, xm[0], 11);
+		if (res == 0)
+			x_xdr = getvalue();
+
+		res = strncmp((char*)two, xm[1], 9);
+		if (res == 0)
+			x_a = getvalue();
+	}
 
 }
 
@@ -117,6 +167,98 @@ void DrawEdit::readoneAnchor() {
 	} while (res != 0);
 
 	Anroot = addAnchor(Anroot, fro, pi, oex, clientData);
+}
+
+void DrawEdit::freeAnchor() {
+	Anchor* p;
+	while (Anroot) {
+		p = Anroot->next;
+		freefrom(Anroot->f);
+		freepic(Anroot->p);
+		freeoneCell(Anroot->ex);
+		free(Anroot->clientD);
+		Anroot = p;
+	}	
+}
+
+void DrawEdit::freeoneCell(oneCellAnchor_ext* oc) {
+	if (oc) {
+		free(oc->cx);
+		free(oc->cy);
+	}
+}
+void DrawEdit::freespPr_a_extLst(spPr_a_extLst* sae) {
+	if (sae) {
+		free(sae->a14_hiddenFill_xmlns);
+		free(sae->uri);
+		free(sae->a_srgbClr_val);
+	}	
+}
+void DrawEdit::freespPr_exLst(spPr_exLst* se) {
+	if (se) {
+		free(se->uri);
+		freespPr_a_extLst(se->a14_hiddenFill);
+	}
+}
+void DrawEdit::freespPr_xfrm(spPr_xfrm* sx) {
+	if (sx) {
+		free(sx->a_off_x);
+		free(sx->a_off_y);
+		free(sx->a_ext_cx);
+		free(sx->a_ext_cy);
+	}
+}
+void DrawEdit::freespPr_prstGeom(spPr_prstGeom* sp) {
+	if (sp) {
+		free(sp->prst);
+		free(sp->avLst);
+	}
+}
+void DrawEdit::freespPr(xdr_spPr* xs) {
+	if (xs) {
+		free(xs->bwMode);
+		free(xs->noFill);
+		freespPr_xfrm(xs->xfrm);
+		freespPr_prstGeom(xs->geom);
+		freespPr_exLst(xs->extLst);
+	}
+}
+void DrawEdit::freepic(xdr_pic* xp) {
+	if (xp) {
+		freeblipFill(xp->b);
+		freespPr(xp->s);
+	}	
+}
+void DrawEdit::freefrom(xdr_from* f) {
+	if (f) {
+		free(f->col);
+		free(f->colOff);
+		free(f->row);
+		free(f->rowOff);
+	}	
+}
+
+void DrawEdit::freeblipFill(blipFill* bf) {
+	if (bf) {
+		free(bf->srcRect);
+		free(bf->strtch);
+		freeblip(bf->Bli);
+	}
+}
+
+void DrawEdit::freeblip(blip* b) {
+	if (b) {
+		free(b->xmlns_r);
+		free(b->r_embed);
+		free(b->cstate);
+		freeblip_extLst(b->ext);
+	}
+}
+void DrawEdit::freeblip_extLst(blip_extLst* be) {
+	if (be) {
+		free(be->a14_useLocalDpi_xmln);
+		free(be->uri);
+	}
 }
 
 UINT8* DrawEdit::read_clientData() {
@@ -246,7 +388,7 @@ xdr_pic* DrawEdit::read_xdrPic() {
 
 		res = strncmp((char*)one, xdrstr[0], 12);
 		if (res == 0)
-			xp=read_xdrnvPicPr();
+			xp= read_cNvPr(xp);
 
 		res = strncmp((char*)two, xdrstr[1], 14);
 		if (res == 0)
@@ -307,7 +449,7 @@ xdr_spPr* DrawEdit::read_spPr() {
 			if (i < 7)
 				one[i] = one[i + 1];
 		}
-		one[6] = two[10] = thr[8] = fou[9] = d[p]; p++;
+		one[7] = two[10] = thr[8] = fou[9] = d[p]; p++;
 
 		res = strncmp((char*)one, nvpicstr[1], 8);
 		if (res == 0)
@@ -355,6 +497,7 @@ spPr_prstGeom* DrawEdit::readprstGeom() {
 	UINT8 one[7] = { 0 };
 
 	UINT8* go = nullptr;
+	UINT8* av = nullptr;
 	spPr_prstGeom* geo = nullptr;
 	int res = 0;
 
@@ -368,11 +511,37 @@ spPr_prstGeom* DrawEdit::readprstGeom() {
 		if (res == 0)
 			go = getvalue();
 	}
+	if (d[p - 1] != '/') {
+		const char* avstr = "<a:avLst";//8
+		UINT8 two[9] = { 0 };
+		do
+		{
+			for (int i = 0; i < 7; i++) {
+				two[i] = two[i + 1];
+			}
+			two[7] = d[p]; p++;
+
+			res = strncmp((char*)two, avstr, 8);
+			if (res == 0)
+				av = read_spPr_avLst();
+		} while (res!=0);
+	}
 
 	geo = (spPr_prstGeom*)malloc(sizeof(spPr_prstGeom));
 	geo->prst = go;
+	geo->avLst = av;
 
 	return geo;
+}
+
+UINT8* DrawEdit::read_spPr_avLst() {
+	while (d[p] != '>') {
+		p++;
+	}
+	if (d[p - 1] == '/') {
+		return nullptr;
+	}
+	return nullptr;
 }
 
 spPr_exLst* DrawEdit::read_spPr_exLst(spPr_exLst* sp) {
@@ -481,16 +650,16 @@ spPr_a_extLst* DrawEdit::read_spPr_a14hidd(spPr_a_extLst* aex) {
 	if (d[p - 1] != '/') {
 		const char* nvpicstr = "<a:solidFill>";
 		//13
-		UINT8 one[14] = { 0 };
+		UINT8 thr[14] = { 0 };
 		int res = 0;
 		do
 		{
 			for (int i = 0; i < 12; i++) {
-				one[i] = one[i + 1];
+				thr[i] = thr[i + 1];
 			}
-			one[12] = d[p]; p++;
+			thr[12] = d[p]; p++;
 
-			res = strncmp((char*)one, nvpicstr, 12);
+			res = strncmp((char*)thr, nvpicstr, 13);
 			if (res == 0)
 				srgb = read_solidFill();
 
@@ -506,26 +675,50 @@ spPr_a_extLst* DrawEdit::read_spPr_a14hidd(spPr_a_extLst* aex) {
 }
 
 UINT8* DrawEdit::read_solidFill() {
-	const char* nvpicstr[] = { "<a:solidFill>","<a:srgbClr" };
-	//13 10
-	UINT8 one[14] = { 0 };
+	const char* nvpicstr[] = { "</a:solidFill>","<a:srgbClr" };
+	//14 10
+	UINT8 one[15] = { 0 };
 	UINT8 two[11] = { 0 };
+	
 	int res = 0;
 	UINT8* srgb = nullptr;
 	do
 	{
-		for (int i = 0; i < 12; i++) {
+		for (int i = 0; i < 13; i++) {
 			one[i] = one[i + 1];
 			if(i<9)
 				two[i] = two[i + 1];
 		}
-		one[12] = two[9] = d[p]; p++;
-
-		res = strncmp((char*)one, nvpicstr[0], 13);
-		if (res == 0)
-			srgb=getvalue();
+		one[13] = two[9] = d[p]; p++;
 
 		res = strncmp((char*)two, nvpicstr[1], 10);
+		if (res == 0)
+			srgb= read_a_srgbClr();
+
+		res = strncmp((char*)one, nvpicstr[0], 14);
+
+	} while (res != 0);
+
+	return srgb;
+}
+
+UINT8* DrawEdit::read_a_srgbClr() {
+	const char* srgbstr = "val=\"";//5
+
+	UINT8 one[6] = { 0 };
+
+	int res = 0;
+	UINT8* srgb = nullptr;
+	do
+	{
+		for (int i = 0; i < 4; i++) {
+			one[i] = one[i + 1];
+		}
+		one[4] = d[p]; p++;
+
+		res = strncmp((char*)one, srgbstr, 5);
+		if (res == 0)
+			srgb = getvalue();
 
 	} while (res != 0);
 
@@ -548,10 +741,10 @@ spPr_xfrm* DrawEdit::read_axfrm() {
 	{
 		for (int i = 0; i < 8; i++) {
 			two[i] = two[i + 1];
-			if (i < 7)
+			if (i < 5)
 				one[i] = one[i + 1];
 		}
-		one[7] = two[8] = d[p]; p++;
+		one[5] = two[8] = d[p]; p++;
 
 		res = strncmp((char*)one, nvpicstr[0], 6);
 		if (res == 0)
@@ -634,38 +827,35 @@ UINT8** DrawEdit::read_aext() {
 
 	return cxy;
 }
-
-xdr_nvPicPr* DrawEdit::read_xdrnvPicPr() {
-	const char* nvpicstr[] = { "<xdr:cNvPr","</xdr:cNvPr>","<xdr:cNvPicPr>" };
-	//10 12 14
+// <xdr:nvPicPr> 検索
+xdr_nvPicPr* DrawEdit::read_cNvPr(xdr_nvPicPr* pic) {
+	const char* nvpicstr[] = { "<xdr:cNvPr","<xdr:cNvPicPr>","</xdr:nvPicPr>" };
+	//10 14 14
 	UINT8 one[11] = { 0 };
-	UINT8 two[13] = { 0 };
-	UINT8 thr[15] = { 0 };
+	UINT8 two[15] = { 0 };
+
 	xfr_cNvPr* pi = nullptr;
-	xdr_cNvPicPr* cnv = nullptr;
-	xdr_nvPicPr* pic=nullptr;
+	xdr_cNvPicPr* cnv = nullptr;	
 	int res = 0;
 
 	do
 	{
 		for (int i = 0; i < 13; i++) {
-			thr[i] = thr[i + 1]; 
-			if (i < 9)
-				one[i] = one[i + 1];
-			if (i < 11)
-				two[i] = two[i + 1];
+			two[i] = two[i + 1];
+			if(i<9)
+			one[i] = one[i + 1];				
 		}
-		one[9] = two[11] = thr[13] = d[p]; p++;
+		one[9] = two[13] = d[p]; p++;
 
 		res = strncmp((char*)one, nvpicstr[0], 10);
 		if (res == 0)
-			pi = read_cNvPr(pi);		
+			pi = read_cNvPrV(pi);
 
-		res = strncmp((char*)thr, nvpicstr[2], 14);
+		res = strncmp((char*)two, nvpicstr[1], 14);
 		if (res == 0)
 			cnv = read_cNvPicPr();
 
-		res = strncmp((char*)two, nvpicstr[1], 12);
+		res = strncmp((char*)two, nvpicstr[2], 14);
 
 	} while (res != 0);
 
@@ -676,7 +866,7 @@ xdr_nvPicPr* DrawEdit::read_xdrnvPicPr() {
 	return pic;
 }
 
-xfr_cNvPr* DrawEdit::read_cNvPr(xfr_cNvPr* pic) {
+xfr_cNvPr* DrawEdit::read_cNvPrV(xfr_cNvPr* pic) {
 	const char* cnvstr[] = { "<a:extLst>","</xdr:cNvPr>","id=\"","name=\"" };
 	//10 12 4 6 11
 	UINT8 one[11] = { 0 };
@@ -865,7 +1055,7 @@ xdr_cNvPicPr* DrawEdit::read_cNvPicPr() {
 		if (res == 0)
 			cnv= read_piclocks(cnv);
 
-		res = strncmp((char*)two, nvpicstr[2], 15);
+		res = strncmp((char*)two, nvpicstr[1], 15);
 
 	} while (res != 0);
 
@@ -1113,10 +1303,10 @@ blip_extLst* DrawEdit::read_blipexLst(blip_extLst* bex) {
 }
 
 blip* DrawEdit::read_blip() {
-	const char* nvpicstr[] = { "<a:extLst>","</xdr:blipFill>","xmlns:r=\"","r:embed=\"","cstate=\"" };
-	//10 15 9 9 8
+	const char* nvpicstr[] = { "<a:extLst>","</a:blip>","xmlns:r=\"","r:embed=\"","cstate=\"" };
+	//10 10 9 9 8
 	UINT8 one[11] = { 0 };
-	UINT8 two[16] = { 0 };
+	//UINT8 two[16] = { 0 };
 	UINT8 thr[10] = { 0 };
 	UINT8 fou[9] = { 0 };
 
@@ -1135,15 +1325,15 @@ blip* DrawEdit::read_blip() {
 		}
 		thr[8] = fou[7] = d[p]; p++;
 
-		res = strncmp((char*)thr, nvpicstr[0], 9);
+		res = strncmp((char*)thr, nvpicstr[2], 9);
 		if (res == 0)
 			xm = getvalue();
 
-		res = strncmp((char*)thr, nvpicstr[1], 9);
+		res = strncmp((char*)thr, nvpicstr[3], 9);
 		if (res == 0)
 			em = getvalue();
 
-		res = strncmp((char*)fou, nvpicstr[2], 8);
+		res = strncmp((char*)fou, nvpicstr[4], 8);
 		if (res == 0)
 			cs = getvalue();
 	}
@@ -1151,18 +1341,16 @@ blip* DrawEdit::read_blip() {
 	if (d[p - 1] != '/') {
 		do
 		{
-			for (int i = 0; i < 14; i++) {
-				two[i] = two[i + 1];
-				if (i < 9)
-					one[i] = one[i + 1];
+			for (int i = 0; i < 9; i++) {
+				one[i] = one[i + 1];
 			}
-			one[8] = two[7] = d[p]; p++;
+			one[9] = d[p]; p++;
 
 			res = strncmp((char*)one, nvpicstr[0], 10);
 			if (res == 0)
 				ex= read_blipexLst(ex);
 
-			res = strncmp((char*)two, nvpicstr[1], 15);
+			//res = strncmp((char*)one, nvpicstr[1], 10);
 
 		} while (res != 0);
 	}
@@ -1200,13 +1388,9 @@ UINT8* DrawEdit::getvalue() {
 
 UINT8* DrawEdit::readBetweenTag() {
 
-	while (d[p] != '>') {
-		if (d[p] == '/') {
-			return nullptr;//タグ終了
-		}
-		p++;
+	if (d[p-1] == '/') {
+		return nullptr;//タグ終了
 	}
-	p++;
 	size_t l = 0;
 
 	while (d[p + l] != '<')

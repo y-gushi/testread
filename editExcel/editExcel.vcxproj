@@ -146,6 +146,7 @@
     <ClCompile Include="CRC.cpp" />
     <ClCompile Include="decode.cpp" />
     <ClCompile Include="deflate.cpp" />
+    <ClCompile Include="drawwrite.cpp" />
     <ClCompile Include="draw_edit.cpp" />
     <ClCompile Include="editExcel.cpp" />
     <ClCompile Include="encode.cpp" />

@@ -58,6 +58,7 @@ struct spPr_exLst
 struct spPr_prstGeom
 {
 	UINT8* prst;
+	UINT8* avLst;
 };
 
 struct spPr_xfrm
@@ -124,10 +125,14 @@ public:
 	UINT32 dl;
 	UINT32 p;
 
+	UINT8* wd;
+	UINT32 wl;
+
 	UINT32 stocklen;
 
 	UINT8* tstr;
-
+	UINT8* x_xdr;
+	UINT8* x_a;
 	//a_extLst* aexLst;
 	//spPr_exLst* spex;
 	Anchor* Anroot;
@@ -137,9 +142,35 @@ public:
 
 	void readdraw();
 
+	void read_xdr_wsDr();
+
 	Anchor* addAnchor(Anchor* a, xdr_from* f, xdr_pic* pi, oneCellAnchor_ext* ex, UINT8* cl);
 
 	void readoneAnchor();
+
+	void freeAnchor();
+
+	void freeoneCell(oneCellAnchor_ext* oc);
+
+	void freespPr_a_extLst(spPr_a_extLst* sae);
+
+	void freespPr_exLst(spPr_exLst* se);
+
+	void freespPr_xfrm(spPr_xfrm* sx);
+
+	void freespPr_prstGeom(spPr_prstGeom* sp);
+
+	void freespPr(xdr_spPr* xs);
+
+	void freepic(xdr_pic* xp);
+
+	void freefrom(xdr_from* f);
+
+	void freeblipFill(blipFill* bf);
+
+	void freeblip(blip* b);
+
+	void freeblip_extLst(blip_extLst* be);
 
 	UINT8* read_clientData();
 
@@ -155,6 +186,8 @@ public:
 
 	spPr_prstGeom* readprstGeom();
 
+	UINT8* read_spPr_avLst();
+
 	spPr_exLst* read_spPr_exLst(spPr_exLst* sp);
 
 	spPr_exLst* read_spPr_ext();
@@ -163,15 +196,17 @@ public:
 
 	UINT8* read_solidFill();
 
+	UINT8* read_a_srgbClr();
+
 	spPr_xfrm* read_axfrm();
 
 	UINT8** read_aoff();
 
 	UINT8** read_aext();
 
-	xdr_nvPicPr* read_xdrnvPicPr();
+	xdr_nvPicPr* read_cNvPr(xdr_nvPicPr* pic);
 
-	xfr_cNvPr* read_cNvPr(xfr_cNvPr* pic);
+	xfr_cNvPr* read_cNvPrV(xfr_cNvPr* pic);
 
 	xdr_ext* read_exLst();
 
@@ -201,4 +236,7 @@ public:
 
 	UINT8* getvalue();
 	UINT8* readBetweenTag();
+	void drawWrite();
+	void oneStrwrite(char* str);
+	void oneStrplusDoubleq(char* str, UINT8* v);
 };

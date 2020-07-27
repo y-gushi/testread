@@ -8,6 +8,7 @@ shareRandD::shareRandD(UINT8* d, UINT64 l) {
     subcount = 0;
     wd = nullptr;
     wlen = 0;
+    sis = nullptr;
 }
 
 shareRandD::~shareRandD() {
