@@ -17,8 +17,13 @@
 #include "comutil.h"
 #include "StyleWrite.h"
 #include <locale.h>
+
 #include "CheckStyle.h"
+
 #include "AppFile.h"
+#include "workbookEdit.h"
+#include "Content_Type_edit.h"
+#include "workbook_rel_edi.h"
 
 #include <stdlib.h>
 #include <crtdbg.h>
@@ -321,6 +326,10 @@ int main(char* fname[], int i) {
 
     char sheet[] = "worksheets/sheet";
     char appfile[] = "docProps/app.xml";
+    char workb[] = "xl/workbook.xml";
+    char content[] = "[Content_Types]";
+    char wbrel[] = "xl/_rels/workbook.xml.rels";
+    char draw[] = "xl/drawings/drawing8.xml";
 
     bool t = false;
     Ctags* mh=nullptr;//発注到着　cell データ読み込み
@@ -338,7 +347,7 @@ int main(char* fname[], int i) {
     
     while (hHinfo->filenum < hHinfo->ER->centralsum) {
         //ファイル名 sheet 部分一致検索
-        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, appfile, &Zr);
+        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, draw, &Zr);
 
         if (cddata) {
             std::cout << "sheet一致ファイルネーム：" << cddata->filename<<" "<< cddata->nonsize << std::endl;
@@ -349,9 +358,9 @@ int main(char* fname[], int i) {
             Hdeco = new DeflateDecode(&Zr);//解凍
             Hdeco->dataread(hHinfo->LH->pos, cddata->nonsize);//解凍　データ読み込み
 
-            App_File ap(Hdeco->ReadV, Hdeco->readlen);
-            ap.readappfile();
-            ap.writeappfile();
+            workb_rels ap(Hdeco->ReadV, Hdeco->readlen);
+            ap.readwbrels();
+            ap.writewbrel();
 
             FILE* f = nullptr;
             fopen_s(&f, mfile, "wb");

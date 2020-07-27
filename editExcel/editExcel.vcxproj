@@ -142,9 +142,11 @@
     <ClCompile Include="appwrite.cpp" />
     <ClCompile Include="bitInOut.cpp" />
     <ClCompile Include="ChangeArrayNumber.cpp" />
+    <ClCompile Include="contentRead.cpp" />
     <ClCompile Include="CRC.cpp" />
     <ClCompile Include="decode.cpp" />
     <ClCompile Include="deflate.cpp" />
+    <ClCompile Include="draw_edit.cpp" />
     <ClCompile Include="editExcel.cpp" />
     <ClCompile Include="encode.cpp" />
     <ClCompile Include="excel_style.cpp" />
@@ -163,6 +165,8 @@
     <ClCompile Include="UINTtoshiftJIS.cpp" />
     <ClCompile Include="unitchange.cpp" />
     <ClCompile Include="workbookEdit.cpp" />
+    <ClCompile Include="workbook_rel_edi.cpp" />
+    <ClCompile Include="workbwrite.cpp" />
     <ClCompile Include="writeshare.cpp" />
     <ClCompile Include="ZipFilewrite.cpp" />
   </ItemGroup>
@@ -172,9 +176,11 @@
     <ClInclude Include="ChangeArrayNumber.h" />
     <ClInclude Include="CheckStyle.h" />
     <ClInclude Include="compressdata.h" />
+    <ClInclude Include="Content_Type_edit.h" />
     <ClInclude Include="CRC.h" />
     <ClInclude Include="decord.h" />
     <ClInclude Include="deflate.h" />
+    <ClInclude Include="draw_edit.h" />
     <ClInclude Include="encode.h" />
     <ClInclude Include="excel_style.h" />
     <ClInclude Include="Header.h" />
@@ -193,6 +199,7 @@
     <ClInclude Include="typechange.h" />
     <ClInclude Include="unitchange.h" />
     <ClInclude Include="workbookEdit.h" />
+    <ClInclude Include="workbook_rel_edi.h" />
     <ClInclude Include="ZipFilewrite.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
