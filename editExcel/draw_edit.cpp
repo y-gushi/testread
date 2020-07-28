@@ -12,6 +12,15 @@ DrawEdit::DrawEdit(UINT8* data, UINT32 datalen)
 	tstr = nullptr;
 	x_xdr = nullptr;
 	x_a = nullptr;
+
+	relhstr = nullptr;
+	relp = 0;
+	relsxmlns = nullptr;
+	relroot = nullptr;
+	rd = nullptr;
+	rdl = 0;
+	rwd = nullptr;
+	rwl = 0;
 }
 
 DrawEdit::~DrawEdit()
@@ -20,6 +29,12 @@ DrawEdit::~DrawEdit()
 	freeAnchor();
 	free(x_xdr);
 	free(x_a);
+
+	freerels();
+
+	free(relhstr);
+	free(relsxmlns);
+	free(rwd);
 }
 
 void DrawEdit::readdraw()

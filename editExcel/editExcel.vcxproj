@@ -142,10 +142,12 @@
     <ClCompile Include="appwrite.cpp" />
     <ClCompile Include="bitInOut.cpp" />
     <ClCompile Include="ChangeArrayNumber.cpp" />
+    <ClCompile Include="config_sheet.cpp" />
     <ClCompile Include="contentRead.cpp" />
     <ClCompile Include="CRC.cpp" />
     <ClCompile Include="decode.cpp" />
     <ClCompile Include="deflate.cpp" />
+    <ClCompile Include="drawrels.cpp" />
     <ClCompile Include="drawwrite.cpp" />
     <ClCompile Include="draw_edit.cpp" />
     <ClCompile Include="editExcel.cpp" />
@@ -158,6 +160,7 @@
     <ClCompile Include="RowColumn.cpp" />
     <ClCompile Include="SearchItemNUm.cpp" />
     <ClCompile Include="shareRandW.cpp" />
+    <ClCompile Include="sheetrel.cpp" />
     <ClCompile Include="SheetWriteAndMake.cpp" />
     <ClCompile Include="ShipDataRead.cpp" />
     <ClCompile Include="slidewindow.cpp" />

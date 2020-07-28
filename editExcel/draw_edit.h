@@ -119,6 +119,13 @@ struct Anchor {
 	Anchor* next;
 };
 
+struct drawRels {
+	UINT8* id;
+	UINT8* target;
+	UINT8* Type;
+	drawRels* next;
+};
+
 class DrawEdit {
 public:
 	UINT8* d;
@@ -136,6 +143,16 @@ public:
 	//a_extLst* aexLst;
 	//spPr_exLst* spex;
 	Anchor* Anroot;
+
+	UINT8* relhstr;//sheetrels head str
+	UINT32 relp;//relsì«Ç›çûÇ›à íu
+	UINT8* relsxmlns;
+	drawRels* relroot;
+	UINT8* rd;//decode data
+	UINT32 rdl;//deco data leng
+	//rels write data
+	UINT8* rwd;
+	UINT32 rwl;
 
 	DrawEdit(UINT8* data,UINT32 datalen);
 	~DrawEdit();
@@ -239,4 +256,13 @@ public:
 	void drawWrite();
 	void oneStrwrite(char* str);
 	void oneStrplusDoubleq(char* str, UINT8* v);
+	void readdrawrels(UINT8* data, UINT32 datalen);
+	void read_Relations();
+	drawRels* addrels(drawRels* sr, UINT8* id, UINT8* t, UINT8* ty);
+
+	void freerels();
+	void read_Relationship();
+	void writerels();
+	void rels_Doubleqwrite(UINT8* str, UINT8* v);
+	void rels_oneStrwrite(UINT8* str);
 };

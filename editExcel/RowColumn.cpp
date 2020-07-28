@@ -5,6 +5,11 @@ Ctags::Ctags(UINT8* decorddata, UINT64 datalen, shareRandD* shdata) {
     dlen = datalen;
     sh = shdata;
     wd = nullptr;
+    rwd = nullptr;
+    wl = 0;
+    rdl = 0;
+    relroot = nullptr;
+    relp = 0;
 }
 
 Ctags::~Ctags() {
@@ -36,6 +41,11 @@ Ctags::~Ctags() {
     freesheetFormatPr();
     freepagemargin();
     freepagesetup();
+
+    free(relhstr);
+    free(relsxmlns);
+    freerels();
+    free(rwd);
 }
 
 void Ctags::sheetread() {
@@ -70,12 +80,17 @@ C* Ctags::addCtable(C* c, UINT8* tv, UINT8* sv, UINT8* si, UINT32 col, UINT8* v,
             c->next = nullptr;
         }
     }
-    else if (col == c->col) {
+    else if (col == c->col) {//更新
+        free(c->val);
         c->val = v;
+        free(c->t);
         c->t = tv;
+        free(c->s);
         c->s = sv;
+        free(c->si);
         c->si = si;
         c->col = col;
+        free(c->f);
         c->f = fv;
     }
     else if (col < c->col) {

@@ -4,6 +4,12 @@
 #include "shareRandW.h"
 #include "TagAndItems.h"
 
+struct sheetRels {
+    UINT8* id;
+    UINT8* target;
+    sheetRels* next;
+};
+
 class Ctags {
 public:
     Ctags(UINT8* decorddata, UINT64 datalen, shareRandD* shdata);
@@ -85,6 +91,16 @@ public:
     UINT32 maxcol = 0;
 
     UINT32 stocklen = 0;//value stock str len
+
+    UINT8* relhstr;//sheetrels head str
+    UINT32 relp;//relsì«Ç›çûÇ›à íu
+    UINT8* relsxmlns;
+    sheetRels* relroot;
+    UINT8* rd;
+    UINT32 rdl;
+    //rels write data
+    UINT8* rwd;
+    UINT32 wl;
 
     int sClen = 0;//diment
     int sRlen = 0;//diment
@@ -183,4 +199,16 @@ public:
     void oneStrplusDoubleq(UINT8* str, UINT8* v);
 
     void oneStrwrite(UINT8* str);
+    void readsheetrels(UINT8* data, UINT32 datalen);
+    void read_Relations();
+    sheetRels* addrels(sheetRels* sr, UINT8* id, UINT8* t);
+    void freerels();
+    void read_Relationship();
+    void writerels();
+    void rels_Doubleqwrite(UINT8* str, UINT8* v);
+    void rels_oneStrwrite(UINT8* str);
+    void colsSettingPlus(cols* nc);
+    bool checkcols(cols* bcl, cols* ncl, UINT32 nma, UINT32 nmi);
+    void insertcols(cols* bc, cols* nc, UINT32 mi, UINT32 ma);
+    void colspushlast(cols* n);
 };

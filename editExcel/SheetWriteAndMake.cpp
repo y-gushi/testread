@@ -16,13 +16,15 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
         rp++;
     UINT32 cn = NA.ColumnArraytoNumber(col, rp);//spanよう　列文字数字
 
-    if (cn > maxcol) {//diment 最大値更新
+    //diment 最大値更新
+    if (cn > maxcol) {
         maxcol = cn;
         dm->eC = NA.ColumnNumtoArray(maxcol, &rp);
         replace = true;
-    }
+    }    
 
-    ro = searchRow(rows, rn);//row位置検索
+    //row位置検索
+    ro = searchRow(rows, rn);
     if (!ro) {
         //row追加
         int cnpl = 0;//桁数　使わない
@@ -58,88 +60,22 @@ void Ctags::addcelldata(UINT8* row, UINT8* col, UINT8* t, UINT8* s, UINT8* v, F*
         //incolnum = NA.NumbertoArray(colnum_start);//数字を文字数時に
         ro->cells = addCtable(ro->cells, t, s, si, cn, v, f);
     }
-    else {//前にcell詰める　入れるセル多いとメモリオーバーする場合あり
-        //rowあり
-        //std::cout << " row あり　追加 v : " << v << std::endl;
-
-        //入れるcellの前がなければ入れる
-        /*
-        C* Croot = ro->cells;
-        UINT32 incolnum = 'A';//セルデータのない時
-        if (Croot) {
-            while (Croot->next)
-                Croot = Croot->next;
-            incolnum = Croot->col;//現在の最終行
-            NA.ColumnIncliment(&incolnum);
-        }
-        */
+    else {
         ro->cells = addCtable(ro->cells, t, s, si, cn, v, f);
-        /*
-        while (incolnum <= cn) {
-            if (incolnum == cn) {
-                //std::cout << " セル追加 前あり　row : " << ro->r << " 行 " << incolnum << std::endl;
-                //incolnum = NA.NumbertoArray(colnum_start);//数字を文字数時に
-                ro->cells = addCtable(ro->cells, t, s, si, incolnum, v, f);
-            }
-            else {
-                //std::cout << " セル追加　row : " << ro->r << " 行 " << incolnum << " s " << s << std::endl;
-                //incolnum = NA.NumbertoArray(colnum_start);//数字を文字数時に
-                UINT8* n1 = nullptr;
-                UINT8* n2 = nullptr;
-                UINT8* n3 = nullptr;
-                F* n4 = nullptr;
-                UINT8* sv = (UINT8*)malloc(5);
-                strcpy_s((char*)sv, 5, (const char*)nomals);
-                ro->cells = addCtable(ro->cells, n1, sv, n2, incolnum, n3, n4);
-            }
-            NA.ColumnIncliment(&incolnum);
-            //colnum_start++;
-        }
-        */
     }
 
     //ro->cells = addCtable(ro->cells, t, s, si, cn, v, f);//セル情報検索
     cn = NA.ColumnCharnumtoNumber(cn);//列番号連番へ　入れた列
 
-    if (replace) {//最大値更新で　cols style確認
-        cols* ncols = cls;
-        while (ncols->next)//cols　最後参照
-            ncols = ncols->next;
-        int j = 0;
-        while (ncols->max[j] != '\0')
-            j++;
-        UINT32 ncn = NA.RowArraytoNum(ncols->max, j);//最終max文字列 数字に変換
-        if (cn > ncn) {//cols max 小さい
-            UINT8 wi[] = "9"; UINT8 styl[] = "1";
-
-            UINT8* wid = (UINT8*)malloc(2);
-            strcpy_s((char*)wid, 2, (const char*)wi);
-
-            UINT8* STy = (UINT8*)malloc(2);
-            strcpy_s((char*)STy, 2, (const char*)styl);
-
-            size_t colmemsiz = strlen((const char*)col) + 1;
-            UINT8* mincol = (UINT8*)malloc(colmemsiz);
-            strcpy_s((char*)mincol, colmemsiz, (const char*)col);
-
-            UINT8* maxcol = (UINT8*)malloc(colmemsiz);
-            strcpy_s((char*)maxcol, colmemsiz, (const char*)col);
-
-            UINT8* Hi = nullptr;
-            UINT8* Bf = nullptr;
-            UINT8* Cuw = nullptr;
-
-            cls = addcolatyle(cls, nullptr, mincol, maxcol, wi, styl, Hi, Bf, Cuw);//cols 追加
-        }
-    }
     rp = 0;//桁数
     while (ro->spanE[rp] != '\0')
         rp++;
     UINT32 nnc = NA.RowArraytoNum(ro->spanE, rp);//span 文字列数字に
     if (cn > nnc) {//新しい文字列が大きい場合　更新
         UINT8* newspan = NA.InttoChar(cn, &rp);
+        free(ro->spanE);
+        ro->spanE = nullptr;
         ro->spanE = newspan;
-        //std::cout << " new span : " << ro->spanE << std::endl;
     }
 }
 

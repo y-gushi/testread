@@ -325,7 +325,7 @@ int main(char* fname[], int i) {
     
     DeflateDecode* Hdeco=nullptr;
 
-    char sheet[] = "worksheets/sheet";
+    char sheet[] = "worksheets/sheet200";
     char appfile[] = "docProps/app.xml";
     char workb[] = "xl/workbook.xml";
     char content[] = "[Content_Types]";
@@ -348,7 +348,7 @@ int main(char* fname[], int i) {
     
     while (hHinfo->filenum < hHinfo->ER->centralsum) {
         //ファイル名 sheet 部分一致検索
-        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, draw, &Zr);
+        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, sheet, &Zr);
 
         if (cddata) {
             std::cout << "sheet一致ファイルネーム：" << cddata->filename<<" "<< cddata->nonsize << std::endl;
@@ -359,11 +359,10 @@ int main(char* fname[], int i) {
             Hdeco = new DeflateDecode(&Zr);//解凍
             Hdeco->dataread(hHinfo->LH->pos, cddata->nonsize);//解凍　データ読み込み
 
-            DrawEdit ap(Hdeco->ReadV, Hdeco->readlen);
-            ap.readdraw();
-            
-            ap.drawWrite();
-            
+            //DrawEdit ap(Hdeco->ReadV, Hdeco->readlen);
+            //ap.readdraw();            
+            //ap.drawWrite();
+            /*
             FILE* f = nullptr;
             fopen_s(&f, mfile, "wb");
             if (!f)
@@ -372,10 +371,10 @@ int main(char* fname[], int i) {
             for (UINT64 i = 0; i < ap.wl; i++)
                 fwrite(&ap.wd[i], sizeof(char), 1, f);
             fclose(f);
-            
+            */
     
-            //mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, hattyushare);//シートデータ読み込み
-            //mh->sheetread();
+            mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, hattyushare);//シートデータ読み込み
+            mh->sheetread();
               /*
             sI = new searchItemNum(mh);
             t = sI->searchitemNumber(hattyushare->uniqstr, hattyushare->inputsinum[3], hattyushare->inputsinum[2], hattyushare->inputsinum[1], hattyushare->inputsinum[0], (char*)styleset, teststyl,sg->its);
@@ -390,7 +389,7 @@ int main(char* fname[], int i) {
                 delete enc;                
             }
             */
-            //delete mh;
+            delete mh;
             delete Hdeco;//デコードデータ　削除
             //delete sI;
             
