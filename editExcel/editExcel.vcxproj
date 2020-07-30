@@ -206,6 +206,10 @@
     <ClInclude Include="workbook_rel_edi.h" />
     <ClInclude Include="ZipFilewrite.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\drawingtemplate.txt" />
+    <Text Include="..\sheettemplate.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -210,4 +210,8 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\drawingtemplate.txt" />
+    <Text Include="..\sheettemplate.txt" />
+  </ItemGroup>
 </Project>

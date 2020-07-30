@@ -2,6 +2,7 @@
 #include "typechange.h"
 #include <string.h>
 #include <stdlib.h>
+#include "ChangeArrayNumber.h"
 
 struct workb {
 	UINT8* xmlns;
@@ -95,7 +96,11 @@ public:
 	UINT32 wl;
 	UINT32 p;
 
+	UINT32 sheetIdMax;
+
 	UINT32 stocklen;
+	UINT32 shsize;
+	UINT32 shcount;
 
 	UINT8* titlestr;
 	workb* wbroot;
@@ -103,7 +108,7 @@ public:
 	workbPr* wProot;
 
 	workView* wVroot;
-	wb_sheets* wbshroot;
+	wb_sheets** wbshroot;
 	extReferences* exRroot;
 	dfnames* dfnroot;
 	feature* fearoot;
@@ -116,8 +121,9 @@ public:
 
 	UINT8* calcPr;
 
-	WorkBook_edi(UINT8* data, UINT32 dlen);
+	WorkBook_edi(UINT8* data, UINT32 dlen, UINT32 Sheetsize);
 	~WorkBook_edi();
+
 	void readworkbook();
 	void xmltitleread();
 	void readhead();
@@ -136,8 +142,9 @@ public:
 	void readsheets();
 	feature* addfeat(feature* fe, UINT8* n);
 	UINT8* getvalue();
+	UINT8* getridNum();
 	void getsheetsV();
-	wb_sheets* addsheets(wb_sheets* wbs, UINT8* n, UINT8* s, UINT8* r);
+	void addsheets(wb_sheets* wbs, UINT8* n, UINT8* s, UINT8* r);
 	void freesheets();
 	void readEReference();
 	void getereference();

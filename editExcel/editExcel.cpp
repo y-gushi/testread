@@ -155,7 +155,6 @@ int main(char* fname[], int i) {
     inMainstr[wlen] = '\0';
     std::cout << "wchar to char : " << inMainstr << " " << wLen << std::endl;
     
-    
     //------------- パッキングリスト--------------------//
     std::ifstream PLR(PLfile, std::ios::in | std::ios::binary);
     if (!PLR)
@@ -348,7 +347,7 @@ int main(char* fname[], int i) {
     
     while (hHinfo->filenum < hHinfo->ER->centralsum) {
         //ファイル名 sheet 部分一致検索
-        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, sheet, &Zr);
+        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, content, &Zr);
 
         if (cddata) {
             std::cout << "sheet一致ファイルネーム：" << cddata->filename<<" "<< cddata->nonsize << std::endl;
@@ -359,10 +358,10 @@ int main(char* fname[], int i) {
             Hdeco = new DeflateDecode(&Zr);//解凍
             Hdeco->dataread(hHinfo->LH->pos, cddata->nonsize);//解凍　データ読み込み
 
-            //DrawEdit ap(Hdeco->ReadV, Hdeco->readlen);
-            //ap.readdraw();            
-            //ap.drawWrite();
-            /*
+            contentEdit ap(Hdeco->ReadV, Hdeco->readlen);
+            ap.contentread();            
+            ap.contentwrite();
+            
             FILE* f = nullptr;
             fopen_s(&f, mfile, "wb");
             if (!f)
@@ -371,7 +370,7 @@ int main(char* fname[], int i) {
             for (UINT64 i = 0; i < ap.wl; i++)
                 fwrite(&ap.wd[i], sizeof(char), 1, f);
             fclose(f);
-            */
+            
     
             mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, hattyushare);//シートデータ読み込み
             mh->sheetread();

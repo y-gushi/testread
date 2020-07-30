@@ -140,22 +140,20 @@ void WorkBook_edi::writeworkbook() {
 		oneStrwrite((char*)bview[10]);
 	}
 
-	if (wbshroot) {
-		oneStrwrite((char*)sheetstr[0]);
+	oneStrwrite((char*)sheetstr[0]);
 
-		wb_sheets* wbsroo = wbshroot;
-		while (wbsroo) {
+	if (wbshroot) {
+		for (UINT32 i = 0; i < shsize; i++) {
 			oneStrwrite((char*)sheetstr[1]);
-			if(wbsroo->name)
-				oneStrplusDoubleq((char*)sheetstr[2], wbsroo->name);
-			if (wbsroo->sheetId)
-				oneStrplusDoubleq((char*)sheetstr[3], wbsroo->sheetId);
-			if (wbsroo->id)
-				oneStrplusDoubleq((char*)sheetstr[4], wbsroo->id);
+			if (wbshroot[i]->name)
+				oneStrplusDoubleq((char*)sheetstr[2], wbshroot[i]->name);
+			if (wbshroot[i]->sheetId)
+				oneStrplusDoubleq((char*)sheetstr[3], wbshroot[i]->sheetId);
+			if (wbshroot[i]->id)
+				oneStrplusDoubleq((char*)sheetstr[4], wbshroot[i]->id);
 			oneStrwrite(sla);
-			wbsroo = wbsroo->next;
 		}
-		oneStrwrite((char*)sheetstr[5]);
+		oneStrwrite((char*)sheetstr[5]);		
 	}
 
 	if (exRroot) {

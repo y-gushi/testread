@@ -282,6 +282,7 @@ UINT8* contentEdit::getvalueandhash() {
 
 	UINT32 len = 0;
 	UINT8* Sv = nullptr;
+	UINT32 hashsize = 548;
 
 	while (d[p + len] != '"')
 		len++;
@@ -294,9 +295,11 @@ UINT8* contentEdit::getvalueandhash() {
 
 	for (UINT32 i = 0; i < len; i++) {
 		Sv[i] = d[p];
-		hashstock += d[p];
+		if(d[p]<0x3A)
+			hashstock += d[p];
 		p++;
 	}
+	//hashstock = hashstock % hashsize;
 
 	Sv[len] = '\0';
 

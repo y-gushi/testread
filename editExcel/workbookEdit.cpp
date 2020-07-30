@@ -1,6 +1,6 @@
 #include "workbookEdit.h"
 #include <iostream>
-WorkBook_edi::WorkBook_edi(UINT8* data,UINT32 dlen)
+WorkBook_edi::WorkBook_edi(UINT8* data,UINT32 dlen,UINT32 Sheetsize)
 {
 	d = data;
 	dl = dlen;
@@ -8,6 +8,7 @@ WorkBook_edi::WorkBook_edi(UINT8* data,UINT32 dlen)
 	wd = nullptr;
 	p = 0;
 	wl = 0;
+	shsize = 0;
 
 	stocklen = 0;
 
@@ -671,6 +672,9 @@ void WorkBook_edi::freebookviewg() {
 void WorkBook_edi::readsheets() {
 	const char* sheetsstr = "<sheet";//6
 	const char* endt = "</sheets>";//9
+	
+	wbshroot = (wb_sheets**)malloc(sizeof(wb_sheets*) * shsize);
+	shcount = 0;
 
 	UINT8 one[7] = { 0 };
 	UINT8 two[10] = { 0 };
@@ -710,6 +714,7 @@ void WorkBook_edi::getsheetsV() {
 	UINT8* sid = nullptr;
 	UINT8* rid = nullptr;
 	int res = 0;
+	ArrayNumber ar;
 
 	while (d[p] != '>') {
 
@@ -731,34 +736,39 @@ void WorkBook_edi::getsheetsV() {
 
 		res = strncmp((char*)one, sheetsstr[2], 6);
 		if (res == 0)
-			rid = getvalue();
+			rid = getridNum();
 	}
+	//シートIDの最大値
+	UINT32 sto = ar.RowArraytoNum(sid, strlen((char*)sid));
+	if (sheetIdMax < sto) {
+		sheetIdMax = sto;
+	}
+	wbshroot[shcount] = (wb_sheets*)malloc(sizeof(wb_sheets)); 
+	wbshroot[shcount]->id = rid;
+	wbshroot[shcount]->name = na;
+	wbshroot[shcount]->sheetId = sid;
 
-	wbshroot = addsheets(wbshroot, na, sid, rid);
+	shcount++;
 }
 
-wb_sheets* WorkBook_edi::addsheets(wb_sheets* wbs,UINT8* n,UINT8* s,UINT8* r) {
-	if (!wbs) {
-		wbs= (wb_sheets*)malloc(sizeof(wb_sheets));
-		wbs->name = n;
-		wbs->sheetId = s;
-		wbs->id = r;
-		wbs->next = nullptr;
-	}else
-		wbs->next = addsheets(wbs->next, n, s, r);
+void WorkBook_edi::addsheets(wb_sheets* wbs,UINT8* n,UINT8* s,UINT8* r) {
+	
+	wb_sheets** nsh = (wb_sheets**)realloc(wbshroot, shsize+1);
 
-	return wbs;
+	nsh[shsize] = (wb_sheets*)malloc(sizeof(wb_sheets));
+	nsh[shsize]->name = n;
+	nsh[shsize]->sheetId = s;
+	nsh[shsize]->id = r;
+	shsize++;
+
+	wbshroot = nsh;	
 }
 
 void WorkBook_edi::freesheets() {
-	wb_sheets* p;
-	while (wbshroot) {
-		p = wbshroot->next;
-		free(wbshroot->id);
-		free(wbshroot->name);
-		free(wbshroot->sheetId);
-		free(wbshroot);
-		wbshroot = p;
+	for (UINT32 i = 0; i < shsize; i++) {
+		free(wbshroot[i]->id);
+		free(wbshroot[i]->name);
+		free(wbshroot[i]->sheetId);
 	}
 }
 
@@ -1163,6 +1173,33 @@ UINT8* WorkBook_edi::getvalue() {
 
 	for (UINT32 i = 0; i < len; i++) {
 		Sv[i] = d[p]; p++;
+	}
+
+	Sv[len] = '\0';
+
+	return Sv;
+}
+
+UINT8* WorkBook_edi::getridNum() {
+
+	UINT32 len = 0;
+	UINT8* Sv = nullptr;
+
+	while (d[p + len] != '"') {
+		if (d[p] <= 0x39&&d[p]>=0x30)
+			len++;
+	}
+		len++;
+
+	stocklen = len;
+	UINT32 ssize = len + 1;
+
+	Sv = (UINT8*)malloc(ssize);
+
+	for (UINT32 i = 0; i < len; i++) {
+		if (d[p] <= 0x39 && d[p] >= 0x30)
+			Sv[i] = d[p];
+		p++;
 	}
 
 	Sv[len] = '\0';
