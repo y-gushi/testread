@@ -172,40 +172,40 @@ int main(char* fname[], int i) {
     //shoplist 715
     ArrayNumber* changeStr = new ArrayNumber;
     std::cout << std::endl;
-    std::cout << "style 1012 cellXfs 検索" << std::endl;
+    std::cout << "style 3893 cellXfs 検索" << std::endl;
     std::cout << std::endl;
-    if (sr->cellXfsRoot[1012]->numFmtId)
-        std::cout << "numFmtId : " << sr->cellXfsRoot[1012]->numFmtId << std::endl;
-    if (sr->cellXfsRoot[1012]->fontId)
-        std::cout << "fontId : " << sr->cellXfsRoot[1012]->fontId << std::endl;
-    if (sr->cellXfsRoot[1012]->fillId)
-        std::cout << "fillId : " << sr->cellXfsRoot[1012]->fillId << std::endl;
-    if (sr->cellXfsRoot[1012]->borderId)
-        std::cout << "borderId : " << sr->cellXfsRoot[1012]->borderId << std::endl;
-    if (sr->cellXfsRoot[1012]->xfId)
-        std::cout << "xfId : " << sr->cellXfsRoot[1012]->xfId << std::endl;
-    if (sr->cellXfsRoot[1012]->applyNumberFormat)
-        std::cout << "applyNumberFormat : " << sr->cellXfsRoot[1012]->applyNumberFormat << std::endl;
-    if (sr->cellXfsRoot[1012]->applyFont)
-        std::cout << "applyFont : " << sr->cellXfsRoot[1012]->applyFont << std::endl;
-    if (sr->cellXfsRoot[1012]->applyFill)
-        std::cout << "applyFill : " << sr->cellXfsRoot[1012]->applyFill << std::endl;
-    if (sr->cellXfsRoot[1012]->applyBorder)
-        std::cout << "applyBorder : " << sr->cellXfsRoot[1012]->applyBorder << std::endl;
-    if (sr->cellXfsRoot[1012]->applyAlignment)
-        std::cout << "applyAlignment : " << sr->cellXfsRoot[1012]->applyAlignment << std::endl;
-    if (sr->cellXfsRoot[1012]->Avertical)
-        std::cout << "vertical : " << sr->cellXfsRoot[1012]->Avertical << std::endl;
-    if (sr->cellXfsRoot[1012]->horizontal)
-        std::cout << "horizontal : " << sr->cellXfsRoot[1012]->horizontal << std::endl;
-    if (sr->cellXfsRoot[1012]->AwrapText)
-        std::cout << "wrapText : " << sr->cellXfsRoot[1012]->AwrapText << std::endl;
+    if (sr->cellXfsRoot[3893]->numFmtId)
+        std::cout << "numFmtId : " << sr->cellXfsRoot[3893]->numFmtId << std::endl;
+    if (sr->cellXfsRoot[3893]->fontId)
+        std::cout << "fontId : " << sr->cellXfsRoot[3893]->fontId << std::endl;
+    if (sr->cellXfsRoot[3893]->fillId)
+        std::cout << "fillId : " << sr->cellXfsRoot[3893]->fillId << std::endl;
+    if (sr->cellXfsRoot[3893]->borderId)
+        std::cout << "borderId : " << sr->cellXfsRoot[3893]->borderId << std::endl;
+    if (sr->cellXfsRoot[3893]->xfId)
+        std::cout << "xfId : " << sr->cellXfsRoot[3893]->xfId << std::endl;
+    if (sr->cellXfsRoot[3893]->applyNumberFormat)
+        std::cout << "applyNumberFormat : " << sr->cellXfsRoot[3893]->applyNumberFormat << std::endl;
+    if (sr->cellXfsRoot[3893]->applyFont)
+        std::cout << "applyFont : " << sr->cellXfsRoot[3893]->applyFont << std::endl;
+    if (sr->cellXfsRoot[3893]->applyFill)
+        std::cout << "applyFill : " << sr->cellXfsRoot[3893]->applyFill << std::endl;
+    if (sr->cellXfsRoot[3893]->applyBorder)
+        std::cout << "applyBorder : " << sr->cellXfsRoot[3893]->applyBorder << std::endl;
+    if (sr->cellXfsRoot[3893]->applyAlignment)
+        std::cout << "applyAlignment : " << sr->cellXfsRoot[3893]->applyAlignment << std::endl;
+    if (sr->cellXfsRoot[3893]->Avertical)
+        std::cout << "vertical : " << sr->cellXfsRoot[3893]->Avertical << std::endl;
+    if (sr->cellXfsRoot[3893]->horizontal)
+        std::cout << "horizontal : " << sr->cellXfsRoot[3893]->horizontal << std::endl;
+    if (sr->cellXfsRoot[3893]->AwrapText)
+        std::cout << "wrapText : " << sr->cellXfsRoot[3893]->AwrapText << std::endl;
 
     int place = 0;
     //fontid 検索
-    while (sr->cellXfsRoot[1012]->fontId[place] != '\0')
+    while (sr->cellXfsRoot[3893]->fontId[place] != '\0')
         place++;
-    UINT32 fontnum = changeStr->RowArraytoNum(sr->cellXfsRoot[1012]->fontId, place);
+    UINT32 fontnum = changeStr->RowArraytoNum(sr->cellXfsRoot[3893]->fontId, place);
     stylec = 0;
 
     Fonts* srf = sr->fontRoot[fontnum];
@@ -232,9 +232,9 @@ int main(char* fname[], int i) {
     //fillid 検索
     place = 0;
 
-    while (sr->cellXfsRoot[1012]->fillId[place] != '\0')
+    while (sr->cellXfsRoot[3893]->fillId[place] != '\0')
         place++;
-    fontnum = changeStr->RowArraytoNum(sr->cellXfsRoot[1012]->fillId, place);
+    fontnum = changeStr->RowArraytoNum(sr->cellXfsRoot[3893]->fillId, place);
     stylec = 0;
 
     Fills* fils = sr->fillroot[fontnum];
@@ -258,9 +258,9 @@ int main(char* fname[], int i) {
     }
     //ボーダー 検索
     place = 0;
-    while (sr->cellXfsRoot[1012]->borderId[place] != '\0')
+    while (sr->cellXfsRoot[3893]->borderId[place] != '\0')
         place++;
-    fontnum = changeStr->RowArraytoNum(sr->cellXfsRoot[1012]->borderId, place);
+    fontnum = changeStr->RowArraytoNum(sr->cellXfsRoot[3893]->borderId, place);
     stylec = 0;
 
     std::cout << std::endl;
@@ -286,9 +286,9 @@ int main(char* fname[], int i) {
     place = 0;
 
 
-    while (sr->cellXfsRoot[1012]->xfId[place] != '\0')
+    while (sr->cellXfsRoot[3893]->xfId[place] != '\0')
         place++;
-    fontnum = changeStr->RowArraytoNum(sr->cellXfsRoot[1012]->xfId, place);
+    fontnum = changeStr->RowArraytoNum(sr->cellXfsRoot[3893]->xfId, place);
     stylexf* cxs = sr->cellstyleXfsRoot[fontnum];
 
     stylec = 0;
@@ -342,9 +342,9 @@ int main(char* fname[], int i) {
         std::cout << "code : " << sr->numFmtsRoot[res]->Code << std::endl;
 
 
-    //xfidでcellstyle検索　sr->cellXfsRoot[1012]->xfId
+    //xfidでcellstyle検索　sr->cellXfsRoot[3893]->xfId
     for (int nu = 0; nu < sr->cellstyleNum; nu++) {
-        res = strcmp((const char*)sr->cellStyleRoot[nu]->xfId, (const char*)sr->cellXfsRoot[1012]->xfId);
+        res = strcmp((const char*)sr->cellStyleRoot[nu]->xfId, (const char*)sr->cellXfsRoot[3893]->xfId);
         if (res == 0) {
             res = nu;
             break;
@@ -387,7 +387,7 @@ int main(char* fname[], int i) {
    発注到着シート読み込み
 
    -----------------------*/
-
+    /*
     DeflateDecode* Hdeco;
 
     char sheet[] = "worksheets/sheet";
@@ -436,7 +436,7 @@ int main(char* fname[], int i) {
     }
 
     std::cout << "end item search" << std::endl;
-
+    */
     delete sharray;
 
     delete hr2;
