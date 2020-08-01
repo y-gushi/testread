@@ -227,8 +227,6 @@ int main(char* fname[], int i) {
         std::cout << "charset : " << srf->charset << std::endl;
     if (srf->scheme)
         std::cout << "scheme : " << srf->scheme << std::endl;
-    if (srf->rgb)
-        std::cout << "rgb : " << srf->rgb << std::endl;
     //fillid 検索
     place = 0;
 
