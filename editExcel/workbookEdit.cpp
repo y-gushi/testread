@@ -8,7 +8,7 @@ WorkBook_edi::WorkBook_edi(UINT8* data,UINT32 dlen,UINT32 Sheetsize)
 	wd = nullptr;
 	p = 0;
 	wl = 0;
-	shsize = 0;
+	shsize = Sheetsize;
 
 	stocklen = 0;
 
@@ -29,6 +29,8 @@ WorkBook_edi::WorkBook_edi(UINT8* data,UINT32 dlen,UINT32 Sheetsize)
 	reviPtrroot = nullptr;
 	calcPr = nullptr;
 	dfnroot = nullptr;
+	shcount = 0;
+	sheetIdMax = 0;
 }
 
 WorkBook_edi::~WorkBook_edi()
@@ -140,7 +142,7 @@ void WorkBook_edi::readworkbook(){
 
 		res = strncmp((char*)dna, dName, 14);
 		if (res == 0)
-			getdefinName();
+			readdefinedName();
 
 		res = strncmp((char*)sh, calcP, 7);
 		if (res == 0)
@@ -153,6 +155,7 @@ void WorkBook_edi::readworkbook(){
 		res = strncmp((char*)las, lasttag, 11);
 
 	} while (res!=0);
+
 }
 
 void WorkBook_edi::xmltitleread() {
@@ -262,15 +265,17 @@ void WorkBook_edi::readhead() {
 }
 
 void WorkBook_edi::freeworkbook() {
-	free(wbroot->Ignorable);
-	free(wbroot->mc);
-	free(wbroot->r);
-	free(wbroot->x15);
-	free(wbroot->xmlns);
-	free(wbroot->xr);
-	free(wbroot->xr10);
-	free(wbroot->xr2);
-	free(wbroot->xr6);
+	if (wbroot) {
+		free(wbroot->Ignorable);
+		free(wbroot->mc);
+		free(wbroot->r);
+		free(wbroot->x15);
+		free(wbroot->xmlns);
+		free(wbroot->xr);
+		free(wbroot->xr10);
+		free(wbroot->xr2);
+		free(wbroot->xr6);
+	}
 	free(wbroot);
 }
 void WorkBook_edi::readfilever() {
@@ -327,10 +332,12 @@ void WorkBook_edi::readfilever() {
 }
 
 void  WorkBook_edi::freefileversion() {
-	free(fVroot->appName);
-	free(fVroot->lastEdited);
-	free(fVroot->lowestEdited);
-	free(fVroot->rupBuild);
+	if (fVroot) {
+		free(fVroot->appName);
+		free(fVroot->lastEdited);
+		free(fVroot->lowestEdited);
+		free(fVroot->rupBuild);
+	}
 	free(fVroot);
 }
 
@@ -369,8 +376,10 @@ void WorkBook_edi::readworkbookpr() {
 }
 
 void  WorkBook_edi::freeworkbookPr() {
-	free(wProot->codeName);
-	free(wProot->defaultThemeVersion);
+	if (wProot) {
+		free(wProot->codeName);
+		free(wProot->defaultThemeVersion);
+	}
 	free(wProot);
 }
 
@@ -427,9 +436,11 @@ void  WorkBook_edi::freeAlterContent() {
 	if (xfifteen) {
 		free(xfifteen->url);
 		free(xfifteen->x15ac);
+		free(xfifteen);
 	}
 	if (mcho) {
 		free(mcho->Requires);
+		free(mcho);
 	}
 }
 
@@ -557,11 +568,13 @@ void WorkBook_edi::readXrRevisionPr() {
 }
 
 void WorkBook_edi::freeXrRevisionPr() {
-	free(reviPtrroot->coauthVersionLast);
-	free(reviPtrroot->coauthVersionMax);
-	free(reviPtrroot->revIDLastSave);
-	free(reviPtrroot->documentId);
-	free(reviPtrroot->uidLastSave);
+	if (reviPtrroot) {
+		free(reviPtrroot->coauthVersionLast);
+		free(reviPtrroot->coauthVersionMax);
+		free(reviPtrroot->revIDLastSave);
+		free(reviPtrroot->documentId);
+		free(reviPtrroot->uidLastSave);
+	}
 	free(reviPtrroot);
 }
 
@@ -593,6 +606,7 @@ void WorkBook_edi::readbookviewg() {
 			p++;
 	}
 	if (d[p-1] != '/') {
+		p++;
 		while (d[p] != '>') {
 			for (int i = 0; i < 13; i++) {
 				thre[i] = thre[i + 1];
@@ -626,7 +640,7 @@ void WorkBook_edi::readbookviewg() {
 			if (res == 0)
 				wh = getvalue();
 
-			res = strncmp((char*)one, filever[4], 10);
+			res = strncmp((char*)fou, filever[4], 10);
 			if (res == 0)
 				tr = getvalue();
 
@@ -657,15 +671,18 @@ void WorkBook_edi::readbookviewg() {
 	wVroot->yWindow = yw;
 }
 
+
 void WorkBook_edi::freebookviewg() {
-	free(wVroot->activeTab);
-	free(wVroot->firstSheet);
-	free(wVroot->tabRatio);
-	free(wVroot->uid);
-	free(wVroot->windowHeight);
-	free(wVroot->windowWidth);
-	free(wVroot->xWindow);
-	free(wVroot->yWindow);
+	if (wVroot) {
+		free(wVroot->activeTab);
+		free(wVroot->firstSheet);
+		free(wVroot->tabRatio);
+		free(wVroot->uid);
+		free(wVroot->windowHeight);
+		free(wVroot->windowWidth);
+		free(wVroot->xWindow);
+		free(wVroot->yWindow);
+	}
 	free(wVroot);
 }
 
@@ -678,7 +695,7 @@ void WorkBook_edi::readsheets() {
 
 	UINT8 one[7] = { 0 };
 	UINT8 two[10] = { 0 };
-
+	
 	int res = 0;
 
 	while (d[p] != '>') {
@@ -696,13 +713,15 @@ void WorkBook_edi::readsheets() {
 			p++;
 
 			res = strncmp((char*)one, sheetsstr, 6);
-			if (res == 0)
+			if (res == 0) {
 				getsheetsV();
+			}
 
 			res = strncmp((char*)two, endt, 9);
 
 		} while (res!=0);
 	}
+
 }
 
 void WorkBook_edi::getsheetsV() {
@@ -769,6 +788,7 @@ void WorkBook_edi::freesheets() {
 		free(wbshroot[i]->id);
 		free(wbshroot[i]->name);
 		free(wbshroot[i]->sheetId);
+		free(wbshroot[i]);
 	}
 }
 
@@ -844,22 +864,20 @@ void WorkBook_edi::freeextReference() {
 	while (exRroot) {
 		p = exRroot->next;
 		free(exRroot->id);
+		free(exRroot);
 		exRroot = p;
 	}
 }
 
 void WorkBook_edi::readdefinedName() {
 	const char* defNamestr = "<definedName";//12
-	const char* et = "</definedNams>";//15
+	const char* et = "</definedNames>";//15
 
 	UINT8 one[13] = { 0 };
 	UINT8 two[16] = { 0 };
 
 	int res = 0;
 
-	while (d[p] != '>') {
-		p++;
-	}
 	if (d[p-1] != '/') {
 		do
 		{
@@ -873,7 +891,7 @@ void WorkBook_edi::readdefinedName() {
 
 			res = strncmp((char*)one, defNamestr, 12);
 			if (res == 0)
-				getereference();
+				getdefinName();
 
 			res = strncmp((char*)two, et, 15);
 
@@ -925,10 +943,11 @@ void WorkBook_edi::getdefinName() {
 		while (d[p + stle]!='<') {
 			stle++;
 		}
-		dn = (UINT8*)calloc(stle + 1, sizeof(UINT8));
+		dn = (UINT8*)malloc(sizeof(UINT8)*(stle + 1));
 
 		for (size_t i = 0; i < stle; i++) {
-			dn[i] = d[p + i];
+			dn[i] = d[p];
+			p++;
 		}
 		dn[stle] = '\0';
 	}
@@ -960,6 +979,7 @@ void WorkBook_edi::freefnames() {
 		free(dfnroot->dfname);
 		free(dfnroot->localSheetId);
 		free(dfnroot->hidden);
+		free(dfnroot);
 		dfnroot = p;
 	}
 }
@@ -1071,6 +1091,7 @@ void WorkBook_edi::getextLst() {
 	exroot->uri = uri;
 	exroot->calcFeature = fearoot;
 
+
 }
 void WorkBook_edi::freefeature(feature* f) {
 	feature* p;
@@ -1083,9 +1104,12 @@ void WorkBook_edi::freefeature(feature* f) {
 }
 
 void WorkBook_edi::freeextLst() {
-	free(exroot->uri);
-	free(exroot->xcalcf);
+	if (exroot) {
+		free(exroot->uri);
+		free(exroot->xcalcf);
+	}
 	freefeature(exroot->calcFeature);
+	free(exroot);
 }
 
 void WorkBook_edi::readXcalcf() {
@@ -1100,6 +1124,7 @@ void WorkBook_edi::readXcalcf() {
 		p++;
 	}
 	if(d[p-1]!='/'){
+		p++;
 		do
 		{
 			for (int i = 0; i < 21; i++) {
@@ -1183,26 +1208,32 @@ UINT8* WorkBook_edi::getvalue() {
 UINT8* WorkBook_edi::getridNum() {
 
 	UINT32 len = 0;
+	UINT32 stl = 0;
 	UINT8* Sv = nullptr;
 
 	while (d[p + len] != '"') {
-		if (d[p] <= 0x39&&d[p]>=0x30)
-			len++;
-	}
+		if (d[p+len] <='9'&& d[p+len]>='0')
+			stl++;
 		len++;
+	}
+	len++;
 
-	stocklen = len;
-	UINT32 ssize = len + 1;
+	stocklen = stl;
+
+	UINT32 ssize = stl + 1;
 
 	Sv = (UINT8*)malloc(ssize);
-
+	stl = 0;
+	std::cout << "\n";
 	for (UINT32 i = 0; i < len; i++) {
-		if (d[p] <= 0x39 && d[p] >= 0x30)
-			Sv[i] = d[p];
+		if (d[p] <= '9' && d[p] >= '0') {
+			Sv[stl] = d[p]; stl++;
+		}
+		std::cout << d[p];
 		p++;
 	}
 
-	Sv[len] = '\0';
+	Sv[stl] = '\0';
 
 	return Sv;
 }

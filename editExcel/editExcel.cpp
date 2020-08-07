@@ -114,7 +114,7 @@ int main(char* fname[], int i) {
     // メモリリーク検出
     //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-    char Zfn[] = "C:/Users/ryo19/OneDrive/デスクトップ/excelfiles/【1 在庫状況】.xlsx";
+    char Zfn[] = "C:/Users/ryo19/OneDrive/デスクトップ/excelfiles/0728/0728/【1 在庫状況】.xlsx";
     char PLfile[] = "C:/Users/ryo19/OneDrive/デスクトップ/excelfiles/LY200212-SHIP ゾゾ.xlsx"; //テスト書き出し
     char mfile[] = "C:/Users/ryo19/OneDrive/デスクトップ/testapp.xml"; //テスト書き出し
     char recd[] = "C:/Users/ryo19/OneDrive/デスクトップ/Centraldata"; //テスト書き出し
@@ -347,7 +347,7 @@ int main(char* fname[], int i) {
     
     while (hHinfo->filenum < hHinfo->ER->centralsum) {
         //ファイル名 sheet 部分一致検索
-        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, content, &Zr);
+        cddata = hHinfo->centeroneread(hHinfo->readpos, hHinfo->ER->size, hHinfo->ER->centralnum, workb, &Zr);
 
         if (cddata) {
             std::cout << "sheet一致ファイルネーム：" << cddata->filename<<" "<< cddata->nonsize << std::endl;
@@ -357,23 +357,25 @@ int main(char* fname[], int i) {
 
             Hdeco = new DeflateDecode(&Zr);//解凍
             Hdeco->dataread(hHinfo->LH->pos, cddata->nonsize);//解凍　データ読み込み
+            UINT32 leng = 423;
 
-            contentEdit ap(Hdeco->ReadV, Hdeco->readlen);
-            ap.contentread();            
-            ap.contentwrite();
+            WorkBook_edi ap(Hdeco->ReadV, Hdeco->readlen,leng);
+            ap.readworkbook();
+
+            ap.writeworkbook();
             
             FILE* f = nullptr;
             fopen_s(&f, mfile, "wb");
             if (!f)
                 printf("ファイルを開けませんでした");
 
-            for (UINT64 i = 0; i < ap.wl; i++)
+            for (UINT32 i = 0; i < ap.wl; i++)
                 fwrite(&ap.wd[i], sizeof(char), 1, f);
             fclose(f);
             
     
-            mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, hattyushare);//シートデータ読み込み
-            mh->sheetread();
+            //mh = new Ctags(Hdeco->ReadV, Hdeco->readlen, hattyushare);//シートデータ読み込み
+            //mh->sheetread();
               /*
             sI = new searchItemNum(mh);
             t = sI->searchitemNumber(hattyushare->uniqstr, hattyushare->inputsinum[3], hattyushare->inputsinum[2], hattyushare->inputsinum[1], hattyushare->inputsinum[0], (char*)styleset, teststyl,sg->its);
@@ -388,7 +390,7 @@ int main(char* fname[], int i) {
                 delete enc;                
             }
             */
-            delete mh;
+            //delete mh;
             delete Hdeco;//デコードデータ　削除
             //delete sI;
             

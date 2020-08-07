@@ -46,6 +46,7 @@ struct workView {
 	UINT8* firstSheet;
 	UINT8* activeTab;
 	UINT8* uid;
+	workView* next;
 };
 
 struct wb_sheets {
